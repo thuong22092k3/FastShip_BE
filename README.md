@@ -15,8 +15,7 @@
 - **Mã môn học:** SE505
 - **Mã lớp:**  SE505.P21.PMCL	
 - **Năm học:** HK2 (2024-2025)
-- **Giảng viên:** Nguyễn Trịnh Đông
-- **Giảng viên:** Huỳnh Hồ Thị Mộng Trinh
+- **Giảng viên:** Nguyễn Trịnh Đông - Huỳnh Hồ Thị Mộng Trinh
 
 <h2>
    Giới thiệu
