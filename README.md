@@ -4,7 +4,7 @@
    </a>
 </p>
 <h1 align="center">
-   Đồ án 1 - SE121.O21.PMCL
+   Khóa luận tốt nghiệp - SE505.P21.PMCL
 </h1>
 
 <h2>
