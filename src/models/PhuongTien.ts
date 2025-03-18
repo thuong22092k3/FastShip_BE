@@ -7,6 +7,10 @@ const PhuongTienSchema = new Schema<IPhuongTien>({
     required: true,
     unique: true,
   },
+  HangXe: {
+    type: String,
+    required: true,
+  },
   TaiXeId: {
     type: "String",
     required: false,

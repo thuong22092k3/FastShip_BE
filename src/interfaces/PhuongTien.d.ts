@@ -1,5 +1,6 @@
 export interface IPhuongTien {
   PhuongTienId: string;
+  HangXe: string;
   TaiXeId: string;
   BienSo: string;
   LoaiXe: string;
