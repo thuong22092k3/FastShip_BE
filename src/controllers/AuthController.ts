@@ -151,7 +151,7 @@ export const authController = {
 
       await newUser.save();
       res
-        .status(201)
+        .status(200)
         .json({ message: "Tạo tài khoản thành công!", user: newUser });
     } catch (err) {
       console.error("Lỗi tạo tài khoản:", err);

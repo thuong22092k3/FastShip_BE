@@ -43,7 +43,7 @@ export const vehicleController = {
       }
 
       const newVehicle = new PhuongTien({
-        PhuongTienId,
+        PhuongTienId: `PT_${Date.now()}`,
         HangXe,
         TaiXeId,
         BienSo,
@@ -158,7 +158,7 @@ export const vehicleController = {
       }
 
       const newBaoDuong = new BaoDuong({
-        BaoDuongId,
+        BaoDuongId: `BD_${Date.now()}`,
         PhuongTienId,
         Ngay,
         TrangThai,
