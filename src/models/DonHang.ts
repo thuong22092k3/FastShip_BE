@@ -42,7 +42,7 @@ const DonHangSchema = new Schema<IDonHang>({
     type: "String",
     required: true,
   },
-  UpdateAt: {
+  UpdatedAt: {
     type: "String",
     required: true,
   },

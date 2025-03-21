@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { authController } from "../controllers/AuthController";
 import { vehicleController } from "../controllers/VehicleController";
 import { partnerController } from "../controllers/PartnerController";
+import { orderController } from "../controllers/OrderController";
 
 const router = express.Router();
 
@@ -25,5 +26,8 @@ router.post("/partner/createPartner", partnerController.createPartner);
 router.post("/partner/updatePartner", partnerController.updatePartner);
 router.delete("/partner/deletePartner", partnerController.deletePartner);
 router.get("/partner/getAllPartner", partnerController.getAllPartner);
+
+//Order
+router.post("/order/createOrder", orderController.createOrder);
 
 export default router;

@@ -9,6 +9,6 @@ export interface IDonHang {
   CuocPhi: number;
   TrangThai: string;
   CreatedAt: string;
-  UpdateAt: string;
+  UpdatedAt: string;
   GhiChu: string;
 }
