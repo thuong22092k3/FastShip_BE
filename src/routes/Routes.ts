@@ -3,6 +3,7 @@ import { authController } from "../controllers/AuthController";
 import { vehicleController } from "../controllers/VehicleController";
 import { partnerController } from "../controllers/PartnerController";
 import { orderController } from "../controllers/OrderController";
+import { statisticsController } from "../controllers/StatisticsController";
 
 const router = express.Router();
 
@@ -31,6 +32,9 @@ router.get("/partner/getAllPartner", partnerController.getAllPartner);
 router.post("/order/createOrder", orderController.createOrder);
 router.put("/order/updateStatusOrder", orderController.updateStatusOrder);
 router.delete("/order/deleteOrder", orderController.deleteOrder);
-router.post("/order/getOrder", orderController.getOrder);
+router.get("/order/getOrder", orderController.getOrder);
+
+//Statistics
+router.get("/statistics", statisticsController.statistic);
 
 export default router;

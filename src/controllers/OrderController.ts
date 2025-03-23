@@ -103,5 +103,26 @@ export const orderController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
-  getOrder: async (req: Request, res: Response): Promise<void> => {},
+  getOrder: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.query;
+
+      if (id) {
+        const order = await DonHang.find();
+
+        if (!order) {
+          res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
+          return;
+        }
+
+        res.status(200).json({ order });
+      } else {
+        const orders = await DonHang.find();
+        res.status(200).json({ orders });
+      }
+    } catch (err) {
+      console.error("Lỗi lấy đơn hàng:", err);
+      res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+  },
 };
