@@ -84,6 +84,24 @@ export const orderController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
-  deleteOrder: async (req: Request, res: Response): Promise<void> => {},
+  deleteOrder: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.query;
+
+      const deletedOrder = await DonHang.findOneAndDelete({ DonHangId: id });
+
+      if (!deletedOrder) {
+        res.status(404).json({ message: "Không tìm thấy đơn hàng để xóa!" });
+        return;
+      }
+
+      res
+        .status(200)
+        .json({ message: "Xóa đơn hàng thành công!", order: deletedOrder });
+    } catch (err) {
+      console.error("Lỗi xóa đơn hàng:", err);
+      res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+  },
   getOrder: async (req: Request, res: Response): Promise<void> => {},
 };
