@@ -9,25 +9,28 @@ const router = express.Router();
 //Authentication
 router.post("/auth/login", authController.loginUser);
 router.post("/auth/createUser", authController.createUser);
-router.post("/auth/updateUser", authController.updateUser);
+router.put("/auth/updateUser", authController.updateUser);
 
 //Vehicle
 router.post("/vehicle/createVehicle", vehicleController.createVehicle);
-router.post("/vehicle/updateVehicle", vehicleController.updateVehicle);
+router.put("/vehicle/updateVehicle", vehicleController.updateVehicle);
 router.delete("/vehicle/deleteVehicle", vehicleController.deleteVehicle);
 router.get("/vehicle/getAllVehicle", vehicleController.getAllVehicle);
 router.post("/vehicle/createBaoDuong", vehicleController.createBaoDuong);
-router.post("/vehicle/updateBaoDuong", vehicleController.updateBaoDuong);
+router.put("/vehicle/updateBaoDuong", vehicleController.updateBaoDuong);
 router.delete("/vehicle/deleteBaoDuong", vehicleController.deleteBaoDuong);
 router.get("/vehicle/getAllBaoDuong", vehicleController.getAllBaoDuong);
 
 //Partner
 router.post("/partner/createPartner", partnerController.createPartner);
-router.post("/partner/updatePartner", partnerController.updatePartner);
+router.put("/partner/updatePartner", partnerController.updatePartner);
 router.delete("/partner/deletePartner", partnerController.deletePartner);
 router.get("/partner/getAllPartner", partnerController.getAllPartner);
 
 //Order
 router.post("/order/createOrder", orderController.createOrder);
+router.put("/order/updateStatusOrder", orderController.updateStatusOrder);
+router.delete("/order/deleteOrder", orderController.deleteOrder);
+router.post("/order/getOrder", orderController.getOrder);
 
 export default router;
