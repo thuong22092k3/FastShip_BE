@@ -31,6 +31,6 @@ router.get("/partner/getAllPartner", partnerController.getAllPartner);
 router.post("/order/createOrder", orderController.createOrder);
 router.put("/order/updateStatusOrder", orderController.updateStatusOrder);
 router.delete("/order/deleteOrder", orderController.deleteOrder);
-router.post("/order/getOrder", orderController.getOrder);
+router.get("/order/getOrder", orderController.getOrder);
 
 export default router;
