@@ -1,13 +1,12 @@
-import { DiaDiem } from "../models/DiaDiem";
-
-export function calculateDistance(a: DiaDiem, b: DiaDiem): number {
+import { IDiaDiem } from "../interfaces/DiaDiem";
+export function calculateDistance(a: IDiaDiem, b: IDiaDiem): number {
   return Math.sqrt(
     Math.pow(a.latitude - b.latitude, 2) +
       Math.pow(a.longitude - b.longitude, 2)
   );
 }
 
-export function createDistanceMatrix(locations: Location[]): number[][] {
+export function createDistanceMatrix(locations: IDiaDiem[]): number[][] {
   const matrix: number[][] = [];
   for (let i = 0; i < locations.length; i++) {
     matrix[i] = [];
