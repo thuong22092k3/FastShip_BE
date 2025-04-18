@@ -13,11 +13,15 @@ const mongoUri = process.env.MONGO_URI as string;
 app.use(express.json());
 app.use("/api", router);
 
-mongoose.connect(mongoUri).then(() => {
-  app.listen(port, () => {
-    console.log("server running on port" + port);
+mongoose
+  .connect(
+    "mongodb+srv://admin:admin@fastship.l23v2.mongodb.net/FastShip?retryWrites=true&w=majority&appName=FastShip"
+  )
+  .then(() => {
+    app.listen(port, () => {
+      console.log("server running on port" + port);
+    });
   });
-});
 
 const ga = new GeneticAlgorithm();
 const initialRoute = ga.run();
