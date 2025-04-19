@@ -33,6 +33,7 @@ router.post("/order/createOrder", orderController.createOrder);
 router.put("/order/updateStatusOrder", orderController.updateStatusOrder);
 router.delete("/order/deleteOrder", orderController.deleteOrder);
 router.get("/order/getOrder", orderController.getOrder);
+router.get("/order/getOrderDetail", orderController.getOrderDetail);
 
 //Statistics
 router.get("/statistics", statisticsController.statistic);

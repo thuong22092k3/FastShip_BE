@@ -125,4 +125,45 @@ export const orderController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
+  getOrderDetail: async (req: Request, res: Response): Promise<void> => {
+    try {
+      console.log("URL được gọi:", req.originalUrl);
+      console.log("Query parameters:", req.query);
+      const { donHangId } = req.query;
+
+      if (!donHangId) {
+        res.status(400).json({ message: "Vui lòng cung cấp ID đơn hàng!" });
+        return;
+      }
+
+      const order = await DonHang.findOne({ DonHangId: donHangId });
+
+      if (!order) {
+        res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
+        return;
+      }
+
+      res.status(200).json({
+        message: "Lấy thông tin đơn hàng thành công!",
+        order: {
+          _id: order._id,
+          id: order.DonHangId,
+          employeeId: order.NhanVienId,
+          sender: order.NguoiGui,
+          receiver: order.NguoiNhan,
+          phone: order.SDT,
+          pickupAddress: order.DiaChiLayHang,
+          deliveryAddress: order.DiaChiGiaoHang,
+          fee: order.CuocPhi,
+          status: order.TrangThai,
+          createdAt: order.CreatedAt,
+          updatedAt: order.UpdatedAt,
+          note: order.GhiChu,
+        },
+      });
+    } catch (err) {
+      console.error("Lỗi lấy thông tin đơn hàng:", err);
+      res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+  },
 };
