@@ -56,7 +56,7 @@ export const orderController = {
   },
   updateStatusOrder: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.query;
+      const { id } = req.params;
       const { TrangThai } = req.body;
 
       if (!TrangThai) {
