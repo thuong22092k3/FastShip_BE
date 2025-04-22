@@ -95,9 +95,8 @@ export const orderController = {
       const { id } = req.query;
       const { TrangThai } = req.body;
 
-      // Debug: Kiểm tra xem đơn hàng có tồn tại không
       const orderExists = await DonHang.findOne({ DonHangId: id });
-      console.log("Debug - Đơn hàng tìm thấy:", orderExists); // Sẽ hiển thị trong terminal server
+      console.log("Debug - Đơn hàng tìm thấy:", orderExists);
 
       if (!id) {
         res.status(400).json({ message: "Vui lòng cung cấp ID đơn hàng!" });

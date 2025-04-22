@@ -216,4 +216,59 @@ export const authController = {
       res.status(500).json({ message: "Lỗi hệ thống!" });
     }
   },
+
+  getUserDetail: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { UserName } = req.params;
+
+      const userTypes = [
+        { model: Admin, role: "Admin" },
+        { model: KhachHang, role: "KhachHang" },
+        { model: NhanVien, role: "NhanVien" },
+        { model: TaiXe, role: "TaiXe" },
+      ];
+
+      for (const userType of userTypes) {
+        const user = await userType.model.findOne({ UserName }).exec();
+        if (user) {
+          res.status(200).json({
+            user: {
+              ...user.toObject(),
+              role: userType.role,
+            },
+          });
+          return;
+        }
+      }
+
+      res.status(404).json({ message: "Không tìm thấy người dùng!" });
+    } catch (err) {
+      console.error("Lỗi lấy chi tiết người dùng:", err);
+      res.status(500).json({ message: "Lỗi hệ thống!" });
+    }
+  },
+
+  getAllUsers: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const admins = await Admin.find().exec();
+      const khachHangs = await KhachHang.find().exec();
+      const nhanViens = await NhanVien.find().exec();
+      const taiXes = await TaiXe.find().exec();
+
+      const allUsers = [
+        ...admins.map((user) => ({ ...user.toObject(), role: "Admin" })),
+        ...khachHangs.map((user) => ({
+          ...user.toObject(),
+          role: "KhachHang",
+        })),
+        ...nhanViens.map((user) => ({ ...user.toObject(), role: "NhanVien" })),
+        ...taiXes.map((user) => ({ ...user.toObject(), role: "TaiXe" })),
+      ];
+
+      res.status(200).json({ users: allUsers });
+    } catch (err) {
+      console.error("Lỗi getAllUsers:", err);
+      res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+  },
 };
