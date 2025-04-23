@@ -12,7 +12,7 @@ router.post("/auth/login", authController.loginUser);
 router.post("/auth/createUser", authController.createUser);
 router.put("/auth/updateUser", authController.updateUser);
 router.get("/auth/users", authController.getAllUsers);
-router.get("/auth/users/:UserName", authController.getUserDetail);
+router.get("/auth/userDetail", authController.getUserDetail);
 
 //Vehicle
 router.post("/vehicle/createVehicle", vehicleController.createVehicle);

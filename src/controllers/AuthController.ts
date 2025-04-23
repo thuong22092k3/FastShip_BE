@@ -250,22 +250,33 @@ export const authController = {
 
   getAllUsers: async (req: Request, res: Response): Promise<void> => {
     try {
-      const admins = await Admin.find().exec();
-      const khachHangs = await KhachHang.find().exec();
-      const nhanViens = await NhanVien.find().exec();
-      const taiXes = await TaiXe.find().exec();
+      const { role } = req.query;
 
-      const allUsers = [
-        ...admins.map((user) => ({ ...user.toObject(), role: "Admin" })),
-        ...khachHangs.map((user) => ({
-          ...user.toObject(),
-          role: "KhachHang",
-        })),
-        ...nhanViens.map((user) => ({ ...user.toObject(), role: "NhanVien" })),
-        ...taiXes.map((user) => ({ ...user.toObject(), role: "TaiXe" })),
-      ];
+      let users = [];
+      switch (role) {
+        case "Admin":
+          users = await Admin.find().exec();
+          break;
+        case "KhachHang":
+          users = await KhachHang.find().exec();
+          break;
+        case "NhanVien":
+          users = await NhanVien.find().exec();
+          break;
+        case "TaiXe":
+          users = await TaiXe.find().exec();
+          break;
+        default:
+          res.status(400).json({ message: "Role không hợp lệ!" });
+          return;
+      }
 
-      res.status(200).json({ users: allUsers });
+      const usersWithRole = users.map((user) => ({
+        ...user.toObject(),
+        role,
+      }));
+
+      res.status(200).json({ users: usersWithRole });
     } catch (err) {
       console.error("Lỗi getAllUsers:", err);
       res.status(500).json({ message: "Lỗi hệ thống" });
