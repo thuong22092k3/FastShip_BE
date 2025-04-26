@@ -67,6 +67,97 @@ export const authController = {
   },
 
   // Tạo tài khoản
+  // createUser: async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     const {
+  //       role,
+  //       UserName,
+  //       Password,
+  //       HoTen,
+  //       Email,
+  //       SDT,
+  //       HieuSuat,
+  //       CongViec,
+  //     } = req.body;
+
+  //     if (!UserName || !Password || !HoTen) {
+  //       res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
+  //       return;
+  //     }
+
+  //     const existingUser =
+  //       (await Admin.findOne({ UserName }).exec()) ||
+  //       (await KhachHang.findOne({ UserName }).exec()) ||
+  //       (await NhanVien.findOne({ UserName }).exec()) ||
+  //       (await TaiXe.findOne({ UserName }).exec());
+
+  //     if (existingUser) {
+  //       res.status(400).json({ message: "Tên đăng nhập đã tồn tại!" });
+  //       return;
+  //     }
+
+  //     const salt = await bcrypt.genSalt(10);
+  //     const hashedPassword = await bcrypt.hash(Password, salt);
+
+  //     let newUser;
+  //     switch (role) {
+  //       case "Admin":
+  //         newUser = new Admin({
+  //           AdminID: `AD_${Date.now()}`,
+  //           UserName,
+  //           Password: hashedPassword,
+  //           HoTen,
+  //           Email,
+  //           role,
+  //         });
+  //         break;
+  //       case "KhachHang":
+  //         newUser = new KhachHang({
+  //           KhachHangID: `KH_${Date.now()}`,
+  //           UserName,
+  //           Password: hashedPassword,
+  //           HoTen,
+  //           SDT,
+  //           role,
+  //         });
+  //         break;
+  //       case "NhanVien":
+  //         newUser = new NhanVien({
+  //           NhanVienID: `NV_${Date.now()}`,
+  //           UserName,
+  //           Password: hashedPassword,
+  //           HoTen,
+  //           Email,
+  //           HieuSuat,
+  //           role,
+  //         });
+  //         break;
+  //       case "TaiXe":
+  //         newUser = new TaiXe({
+  //           TaiXeID: `TX_${Date.now()}`,
+  //           UserName,
+  //           Password: hashedPassword,
+  //           HoTen,
+  //           Email,
+  //           HieuSuat,
+  //           CongViec,
+  //           role,
+  //         });
+  //         break;
+  //       default:
+  //         res.status(400).json({ message: "Loại người dùng không hợp lệ!" });
+  //         return;
+  //     }
+
+  //     await newUser.save();
+  //     res
+  //       .status(200)
+  //       .json({ message: "Tạo tài khoản thành công!", user: newUser });
+  //   } catch (err) {
+  //     console.error("Lỗi tạo tài khoản:", err);
+  //     res.status(500).json({ message: "Lỗi hệ thống!" });
+  //   }
+  // },
   createUser: async (req: Request, res: Response): Promise<void> => {
     try {
       const {
@@ -80,11 +171,25 @@ export const authController = {
         CongViec,
       } = req.body;
 
+      // Validate required fields
       if (!UserName || !Password || !HoTen) {
         res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
         return;
       }
 
+      // Validate password length
+      if (Password.length < 8) {
+        res.status(400).json({ message: "Mật khẩu phải có ít nhất 8 ký tự" });
+        return;
+      }
+
+      // Validate email format if provided
+      if (Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(Email)) {
+        res.status(400).json({ message: "Email không hợp lệ" });
+        return;
+      }
+
+      // Check for existing user
       const existingUser =
         (await Admin.findOne({ UserName }).exec()) ||
         (await KhachHang.findOne({ UserName }).exec()) ||
@@ -93,6 +198,12 @@ export const authController = {
 
       if (existingUser) {
         res.status(400).json({ message: "Tên đăng nhập đã tồn tại!" });
+        return;
+      }
+
+      // Validate efficiency range
+      if (HieuSuat && (HieuSuat < 0 || HieuSuat > 100)) {
+        res.status(400).json({ message: "Hiệu suất phải từ 0 đến 100" });
         return;
       }
 
@@ -158,7 +269,6 @@ export const authController = {
       res.status(500).json({ message: "Lỗi hệ thống!" });
     }
   },
-
   // Cập nhật tài khoản
   updateUser: async (req: Request, res: Response): Promise<void> => {
     try {
