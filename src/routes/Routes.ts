@@ -13,6 +13,7 @@ router.post("/auth/createUser", authController.createUser);
 router.put("/auth/updateUser", authController.updateUser);
 router.get("/auth/users", authController.getAllUsers);
 router.get("/auth/userDetail", authController.getUserDetail);
+router.delete("/auth/deleteUser", authController.deleteUser);
 
 //Vehicle
 router.post("/vehicle/createVehicle", vehicleController.createVehicle);

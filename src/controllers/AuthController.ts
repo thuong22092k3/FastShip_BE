@@ -392,4 +392,44 @@ export const authController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
+
+  //Delete user
+  deleteUser: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { UserName } = req.query;
+
+      if (!UserName) {
+        res.status(400).json({ message: "Vui lòng cung cấp tên đăng nhập!" });
+        return;
+      }
+
+      const userTypes = [
+        { model: Admin, role: "Admin" },
+        { model: KhachHang, role: "KhachHang" },
+        { model: NhanVien, role: "NhanVien" },
+        { model: TaiXe, role: "TaiXe" },
+      ];
+
+      let deleted = false;
+      for (const userType of userTypes) {
+        const result = await userType.model
+          .findOneAndDelete({ UserName })
+          .exec();
+        if (result) {
+          deleted = true;
+          break;
+        }
+      }
+
+      if (!deleted) {
+        res.status(404).json({ message: "Không tìm thấy tài khoản để xóa!" });
+        return;
+      }
+
+      res.status(200).json({ message: "Xóa tài khoản thành công!" });
+    } catch (err) {
+      console.error("Lỗi xóa tài khoản:", err);
+      res.status(500).json({ message: "Lỗi hệ thống!" });
+    }
+  },
 };
