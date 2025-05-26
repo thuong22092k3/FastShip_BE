@@ -41,14 +41,14 @@ import cors from "cors";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "https://fastship-be.onrender.com"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: ["http://localhost:3000", "https://fastship-be.onrender.com"],
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true,
+//   })
+// );
 
 app.use(express.json());
 app.use("/api", router);
@@ -58,7 +58,7 @@ mongoose
     "mongodb+srv://admin:admin@fastship.l23v2.mongodb.net/FastShip?retryWrites=true&w=majority&appName=FastShip"
   )
   .then(() => {
-    app.listen(3000, () => {});
+    app.listen(5000, () => {});
   })
   .catch((err) => {
     process.exit(1);
