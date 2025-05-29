@@ -4,6 +4,7 @@ import { vehicleController } from "../controllers/VehicleController";
 import { partnerController } from "../controllers/PartnerController";
 import { orderController } from "../controllers/OrderController";
 import { statisticsController } from "../controllers/StatisticsController";
+import { optimizationController } from "../controllers/OptimizationController";
 
 const router = express.Router();
 
@@ -40,5 +41,8 @@ router.get("/order/getOrderDetail", orderController.getOrderDetail);
 
 //Statistics
 router.get("/statistics", statisticsController.statistic);
+
+//Algorithms
+router.post("/optimize/route", optimizationController.optimizeRoute);
 
 export default router;
