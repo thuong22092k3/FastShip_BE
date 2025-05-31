@@ -58,7 +58,9 @@ mongoose
     "mongodb+srv://admin:admin@fastship.l23v2.mongodb.net/FastShip?retryWrites=true&w=majority&appName=FastShip"
   )
   .then(() => {
-    app.listen(5000, () => {});
+    app.listen(5000, () => {
+      console.log("server running on port" + 5000);
+    });
   })
   .catch((err) => {
     process.exit(1);

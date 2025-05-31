@@ -5,6 +5,7 @@ import { partnerController } from "../controllers/PartnerController";
 import { orderController } from "../controllers/OrderController";
 import { statisticsController } from "../controllers/StatisticsController";
 import { optimizationController } from "../controllers/OptimizationController";
+import { locationController } from "../controllers/LocationController";
 
 const router = express.Router();
 
@@ -44,5 +45,13 @@ router.get("/statistics", statisticsController.statistic);
 
 //Algorithms
 router.post("/optimize/route", optimizationController.optimizeRoute);
+
+// Location=
+router.post("/location/create", locationController.createLocation);
+router.get("/location/all", locationController.getAllLocations);
+router.get("/location/search", locationController.searchLocations);
+router.get("/location/get/:id", locationController.getLocationById);
+router.put("/location/update/:id", locationController.updateLocation);
+router.delete("/location/delete/:id", locationController.deleteLocation);
 
 export default router;
