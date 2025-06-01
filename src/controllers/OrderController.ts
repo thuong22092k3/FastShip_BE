@@ -225,6 +225,90 @@ export const orderController = {
     }
   },
 
+  // searchOrders: async (req: Request, res: Response) => {
+  //   const { keyword } = req.query;
+  //   const page = parseInt(req.query.page as string) || 1;
+  //   const limit = parseInt(req.query.limit as string) || 10;
+  //   const skip = (page - 1) * limit;
+
+  //   if (!keyword || keyword.toString().trim() === "") {
+  //     return res.status(400).json({
+  //       success: false,
+  //       message: "Vui lòng nhập từ khóa tìm kiếm",
+  //     });
+  //   }
+
+  //   const normalizeVietnamese = (str: string) => {
+  //     return str
+  //       .normalize("NFD")
+  //       .replace(/[\u0300-\u036f]/g, "")
+  //       .replace(/đ/g, "d")
+  //       .replace(/Đ/g, "D")
+  //       .toLowerCase();
+  //   };
+
+  //   const searchTerm = keyword.toString().trim();
+  //   const normalizedSearch = normalizeVietnamese(searchTerm);
+
+  //   const regexPattern = normalizedSearch
+  //     .split("")
+  //     .map((char) => {
+  //       const mappings: Record<string, string> = {
+  //         a: "[aàáảãạăằắẳẵặâầấẩẫậ]",
+  //         d: "[dđ]",
+  //         e: "[eèéẻẽẹêềếểễệ]",
+  //         i: "[iìíỉĩị]",
+  //         o: "[oòóỏõọôồốổỗộơờớởỡợ]",
+  //         u: "[uùúủũụưừứửữự]",
+  //         y: "[yỳýỷỹỵ]",
+  //       };
+  //       return mappings[char] || char;
+  //     })
+  //     .join(".*");
+
+  //   const regex = new RegExp(regexPattern, "i");
+
+  //   const searchFields = [
+  //     { NguoiGui: { $regex: regex } },
+  //     { DonHangId: { $regex: regex } },
+  //     { NguoiNhan: { $regex: regex } },
+  //     { SDT: { $regex: regex } },
+  //     { DiaChiLayHang: { $regex: regex } },
+  //     { DiaChiGiaoHang: { $regex: regex } },
+  //   ];
+
+  //   try {
+  //     const [orders, total] = await Promise.all([
+  //       DonHangModel.find({ $or: searchFields }).skip(skip).limit(limit),
+  //       DonHangModel.countDocuments({ $or: searchFields }),
+  //     ]);
+
+  //     if (!orders.length) {
+  //       return res.status(200).json({
+  //         success: true,
+  //         data: [],
+  //         total: 0,
+  //         page,
+  //         totalPages: 0,
+  //         message: "Không tìm thấy đơn hàng phù hợp",
+  //       });
+  //     }
+
+  //     return res.status(200).json({
+  //       success: true,
+  //       data: orders,
+  //       total,
+  //       page,
+  //       totalPages: Math.ceil(total / limit),
+  //     });
+  //   } catch (error) {
+  //     console.error("Search error:", error);
+  //     return res.status(500).json({
+  //       success: false,
+  //       message: "Lỗi hệ thống khi tìm kiếm đơn hàng",
+  //     });
+  //   }
+  // },
   searchOrders: async (req: Request, res: Response) => {
     const { keyword } = req.query;
     const page = parseInt(req.query.page as string) || 1;
@@ -239,11 +323,44 @@ export const orderController = {
       return;
     }
 
-    const searchTerm = keyword.toString();
-    const regex = new RegExp(
-      searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-      "i"
-    );
+    //   searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    //   "i"
+    // );
+    const normalizeVietnamese = (str: string) => {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .toLowerCase();
+    };
+
+    const charMap: Record<string, string> = {
+      a: "aàáảãạăằắẳẵặâầấẩẫậ",
+      d: "dđ",
+      e: "eèéẻẽẹêềếểễệ",
+      i: "iìíỉĩị",
+      o: "oòóỏõọôồốổỗộơờớởỡợ",
+      u: "uùúủũụưừứửữự",
+      y: "yỳýỷỹỵ",
+    };
+
+    const toRegexChar = (char: string) => {
+      const group = Object.entries(charMap).find(([base, chars]) =>
+        chars.includes(char)
+      );
+      return group ? `[${group[1]}]` : char;
+    };
+    const searchTerm = normalizeVietnamese(keyword.toString().trim());
+
+    const regexPattern = searchTerm
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .split("")
+      .map(toRegexChar)
+      .join("");
+
+    const regex = new RegExp(regexPattern, "i");
 
     const [orders, total] = await Promise.all([
       DonHangModel.find({
