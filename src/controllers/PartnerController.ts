@@ -152,11 +152,46 @@ export const partnerController = {
       return;
     }
 
-    const searchTerm = keyword.toString();
-    const regex = new RegExp(
-      searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-      "i"
-    );
+    // const searchTerm = keyword.toString();
+    // const regex = new RegExp(
+    //   searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    //   "i"
+    // );
+    const normalizeVietnamese = (str: string) => {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .toLowerCase();
+    };
+
+    const charMap: Record<string, string> = {
+      a: "aàáảãạăằắẳẵặâầấẩẫậ",
+      d: "dđ",
+      e: "eèéẻẽẹêềếểễệ",
+      i: "iìíỉĩị",
+      o: "oòóỏõọôồốổỗộơờớởỡợ",
+      u: "uùúủũụưừứửữự",
+      y: "yỳýỷỹỵ",
+    };
+
+    const toRegexChar = (char: string) => {
+      const group = Object.entries(charMap).find(([base, chars]) =>
+        chars.includes(char)
+      );
+      return group ? `[${group[1]}]` : char;
+    };
+    const searchTerm = normalizeVietnamese(keyword.toString().trim());
+
+    const regexPattern = searchTerm
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .split("")
+      .map(toRegexChar)
+      .join("");
+
+    const regex = new RegExp(regexPattern, "i");
 
     // const partners = await DoiTacModel.find({
     //   $or: [

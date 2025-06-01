@@ -66,98 +66,6 @@ export const authController = {
     }
   },
 
-  // Tạo tài khoản
-  // createUser: async (req: Request, res: Response): Promise<void> => {
-  //   try {
-  //     const {
-  //       role,
-  //       UserName,
-  //       Password,
-  //       HoTen,
-  //       Email,
-  //       SDT,
-  //       HieuSuat,
-  //       CongViec,
-  //     } = req.body;
-
-  //     if (!UserName || !Password || !HoTen) {
-  //       res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
-  //       return;
-  //     }
-
-  //     const existingUser =
-  //       (await Admin.findOne({ UserName }).exec()) ||
-  //       (await KhachHang.findOne({ UserName }).exec()) ||
-  //       (await NhanVien.findOne({ UserName }).exec()) ||
-  //       (await TaiXe.findOne({ UserName }).exec());
-
-  //     if (existingUser) {
-  //       res.status(400).json({ message: "Tên đăng nhập đã tồn tại!" });
-  //       return;
-  //     }
-
-  //     const salt = await bcrypt.genSalt(10);
-  //     const hashedPassword = await bcrypt.hash(Password, salt);
-
-  //     let newUser;
-  //     switch (role) {
-  //       case "Admin":
-  //         newUser = new Admin({
-  //           AdminID: `AD_${Date.now()}`,
-  //           UserName,
-  //           Password: hashedPassword,
-  //           HoTen,
-  //           Email,
-  //           role,
-  //         });
-  //         break;
-  //       case "KhachHang":
-  //         newUser = new KhachHang({
-  //           KhachHangID: `KH_${Date.now()}`,
-  //           UserName,
-  //           Password: hashedPassword,
-  //           HoTen,
-  //           SDT,
-  //           role,
-  //         });
-  //         break;
-  //       case "NhanVien":
-  //         newUser = new NhanVien({
-  //           NhanVienID: `NV_${Date.now()}`,
-  //           UserName,
-  //           Password: hashedPassword,
-  //           HoTen,
-  //           Email,
-  //           HieuSuat,
-  //           role,
-  //         });
-  //         break;
-  //       case "TaiXe":
-  //         newUser = new TaiXe({
-  //           TaiXeID: `TX_${Date.now()}`,
-  //           UserName,
-  //           Password: hashedPassword,
-  //           HoTen,
-  //           Email,
-  //           HieuSuat,
-  //           CongViec,
-  //           role,
-  //         });
-  //         break;
-  //       default:
-  //         res.status(400).json({ message: "Loại người dùng không hợp lệ!" });
-  //         return;
-  //     }
-
-  //     await newUser.save();
-  //     res
-  //       .status(200)
-  //       .json({ message: "Tạo tài khoản thành công!", user: newUser });
-  //   } catch (err) {
-  //     console.error("Lỗi tạo tài khoản:", err);
-  //     res.status(500).json({ message: "Lỗi hệ thống!" });
-  //   }
-  // },
   createUser: async (req: Request, res: Response): Promise<void> => {
     try {
       const {
@@ -494,11 +402,46 @@ export const authController = {
         return;
       }
 
-      const searchTerm = keyword.toString();
-      const regex = new RegExp(
-        searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-        "i"
-      );
+      // const searchTerm = keyword.toString();
+      // const regex = new RegExp(
+      //   searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      //   "i"
+      // );
+      const normalizeVietnamese = (str: string) => {
+        return str
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/Đ/g, "D")
+          .toLowerCase();
+      };
+
+      const charMap: Record<string, string> = {
+        a: "aàáảãạăằắẳẵặâầấẩẫậ",
+        d: "dđ",
+        e: "eèéẻẽẹêềếểễệ",
+        i: "iìíỉĩị",
+        o: "oòóỏõọôồốổỗộơờớởỡợ",
+        u: "uùúủũụưừứửữự",
+        y: "yỳýỷỹỵ",
+      };
+
+      const toRegexChar = (char: string) => {
+        const group = Object.entries(charMap).find(([base, chars]) =>
+          chars.includes(char)
+        );
+        return group ? `[${group[1]}]` : char;
+      };
+      const searchTerm = normalizeVietnamese(keyword.toString().trim());
+
+      const regexPattern = searchTerm
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .split("")
+        .map(toRegexChar)
+        .join("");
+
+      const regex = new RegExp(regexPattern, "i");
 
       const userTypes = [
         { model: Admin, role: "Admin" },
