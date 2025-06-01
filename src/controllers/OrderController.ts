@@ -1,5 +1,6 @@
 import { Response, Request } from "express";
 import DonHang from "../models/DonHang";
+import DonHangModel from "../models/DonHang";
 
 export const orderController = {
   createOrder: async (req: Request, res: Response): Promise<void> => {
@@ -149,21 +150,34 @@ export const orderController = {
   },
   getOrder: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.query;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      // const { id } = req.query;
+      const [orders, total] = await Promise.all([
+        DonHangModel.find().skip(skip).limit(limit),
+        DonHangModel.countDocuments(),
+      ]);
+      res.status(200).json({
+        success: true,
+        data: orders,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
+      // if (id) {
+      //   const order = await DonHang.find();
 
-      if (id) {
-        const order = await DonHang.find();
+      //   if (!order) {
+      //     res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
+      //     return;
+      //   }
 
-        if (!order) {
-          res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
-          return;
-        }
-
-        res.status(200).json({ order });
-      } else {
-        const orders = await DonHang.find();
-        res.status(200).json({ orders });
-      }
+      //   res.status(200).json({ order });
+      // } else {
+      //   const orders = await DonHang.find();
+      //   res.status(200).json({ orders });
+      // }
     } catch (err) {
       console.error("Lỗi lấy đơn hàng:", err);
       res.status(500).json({ message: "Lỗi hệ thống" });
@@ -209,5 +223,68 @@ export const orderController = {
       console.error("Lỗi lấy thông tin đơn hàng:", err);
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
+  },
+
+  searchOrders: async (req: Request, res: Response) => {
+    const { keyword } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    if (!keyword) {
+      res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập từ khóa tìm kiếm",
+      });
+      return;
+    }
+
+    const searchTerm = keyword.toString();
+    const regex = new RegExp(
+      searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i"
+    );
+
+    const [orders, total] = await Promise.all([
+      DonHangModel.find({
+        $or: [
+          { NguoiGui: { $regex: regex } },
+          { DonHangId: { $regex: regex } },
+          { NguoiGui: { $regex: regex } },
+          { NguoiNhan: { $regex: regex } },
+          { SDT: { $regex: regex } },
+          { DiaChiLayHang: { $regex: regex } },
+          { DiaChiGiaoHang: { $regex: regex } },
+        ],
+      })
+        .skip(skip)
+        .limit(limit),
+      DonHangModel.countDocuments({
+        $or: [
+          { NguoiGui: { $regex: regex } },
+          { DonHangId: { $regex: regex } },
+          { NguoiGui: { $regex: regex } },
+          { NguoiNhan: { $regex: regex } },
+          { SDT: { $regex: regex } },
+          { DiaChiLayHang: { $regex: regex } },
+          { DiaChiGiaoHang: { $regex: regex } },
+        ],
+      }),
+    ]);
+    if (orders.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng phù hợp",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: orders,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   },
 };

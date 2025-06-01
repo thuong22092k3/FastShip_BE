@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { IPhuongTien } from "../interfaces/PhuongTien";
 import PhuongTien from "../models/PhuongTien";
 import BaoDuong from "../models/BaoDuong";
+import PhuongTienModel from "../models/PhuongTien";
+import BaoDuongModel from "../models/BaoDuong";
 
 export const vehicleController = {
   //Thêm phương tiện
@@ -125,14 +127,82 @@ export const vehicleController = {
   //Lấy danh sách phương tiện
   getAllVehicle: async (req: Request, res: Response): Promise<void> => {
     try {
-      const vehicles = await PhuongTien.find();
-      res
-        .status(200)
-        .json({ message: "Danh sách phương tiện", data: vehicles });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      const [vehicles, total] = await Promise.all([
+        PhuongTienModel.find().skip(skip).limit(limit),
+        PhuongTienModel.countDocuments(),
+      ]);
+      // const vehicles = await PhuongTien.find();
+      res.status(200).json({
+        message: "Danh sách phương tiện",
+        data: vehicles,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
     } catch (err) {
       console.error("Lỗi lấy danh sách phương tiện:", err);
       res.status(500).json({ message: "Lỗi hệ thống!" });
     }
+  },
+
+  searchVehicles: async (req: Request, res: Response) => {
+    const { keyword } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    if (!keyword) {
+      res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập từ khóa tìm kiếm",
+      });
+      return;
+    }
+
+    const searchTerm = keyword.toString();
+    const regex = new RegExp(
+      searchTerm.replace(/[-_.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i"
+    );
+
+    const [vehicles, total] = await Promise.all([
+      PhuongTienModel.find({
+        $or: [
+          { HangXe: { $regex: regex } },
+          { PhuongTienId: { $regex: regex } },
+          { BienSo: { $regex: regex } },
+          { LoaiXe: { $regex: regex } },
+        ],
+      })
+        .skip(skip)
+        .limit(limit),
+      PhuongTienModel.countDocuments({
+        $or: [
+          { HangXe: { $regex: regex } },
+          { PhuongTienId: { $regex: regex } },
+          { BienSo: { $regex: regex } },
+          { LoaiXe: { $regex: regex } },
+        ],
+      }),
+    ]);
+    if (vehicles.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "Không tìm thấy phương tiện phù hợp",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: vehicles,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   },
 
   //Tạo phiếu bảo dưỡng
@@ -205,10 +275,21 @@ export const vehicleController = {
   // Lấy danh sách phiếu bảo dưỡng
   getAllBaoDuong: async (req: Request, res: Response): Promise<void> => {
     try {
-      const baoDuongList = await BaoDuong.find();
-      res
-        .status(200)
-        .json({ message: "Danh sách phiếu bảo dưỡng", data: baoDuongList });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      // const baoDuongList = await BaoDuong.find();
+      const [mantainces, total] = await Promise.all([
+        BaoDuongModel.find().skip(skip).limit(limit),
+        BaoDuongModel.countDocuments(),
+      ]);
+      res.status(200).json({
+        message: "Danh sách phiếu bảo dưỡng",
+        data: mantainces,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
     } catch (err) {
       console.error("Lỗi lấy danh sách phiếu bảo dưỡng:", err);
       res.status(500).json({ message: "Lỗi hệ thống!" });
@@ -237,5 +318,62 @@ export const vehicleController = {
       console.error("Lỗi xóa phiếu bảo dưỡng:", err);
       res.status(500).json({ message: "Lỗi hệ thống!" });
     }
+  },
+
+  searchMantainces: async (req: Request, res: Response) => {
+    const { keyword } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    if (!keyword) {
+      res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập từ khóa tìm kiếm",
+      });
+      return;
+    }
+
+    const searchTerm = keyword.toString();
+    const regex = new RegExp(
+      searchTerm.replace(/[-_.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i"
+    );
+
+    const [mantainces, total] = await Promise.all([
+      BaoDuongModel.find({
+        $or: [
+          { Ngay: { $regex: regex } },
+          { BaoDuongId: { $regex: regex } },
+          { TrangThai: { $regex: regex } },
+          // { ChiPhi: { $regex: regex } },
+        ],
+      })
+        .skip(skip)
+        .limit(limit),
+      BaoDuongModel.countDocuments({
+        $or: [
+          { Ngay: { $regex: regex } },
+          { BaoDuongId: { $regex: regex } },
+          { TrangThai: { $regex: regex } },
+          // { ChiPhi: { $regex: regex } },
+        ],
+      }),
+    ]);
+    if (mantainces.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "Không tìm thấy bảo dưỡng phù hợp",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: mantainces,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   },
 };

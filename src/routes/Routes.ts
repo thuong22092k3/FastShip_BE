@@ -16,6 +16,7 @@ router.put("/auth/updateUser", authController.updateUser);
 router.get("/auth/users", authController.getAllUsers);
 router.get("/auth/userDetail", authController.getUserDetail);
 router.delete("/auth/deleteUser", authController.deleteUser);
+router.get("/auth/search", authController.searchUser);
 
 //Vehicle
 router.post("/vehicle/createVehicle", vehicleController.createVehicle);
@@ -26,12 +27,15 @@ router.post("/vehicle/createBaoDuong", vehicleController.createBaoDuong);
 router.put("/vehicle/updateBaoDuong", vehicleController.updateBaoDuong);
 router.delete("/vehicle/deleteBaoDuong", vehicleController.deleteBaoDuong);
 router.get("/vehicle/getAllBaoDuong", vehicleController.getAllBaoDuong);
+router.get("/vehicle/seachVehicle", vehicleController.searchVehicles);
+router.get("/vehicle/seachMantaince", vehicleController.searchMantainces);
 
 //Partner
 router.post("/partner/createPartner", partnerController.createPartner);
 router.put("/partner/updatePartner", partnerController.updatePartner);
 router.delete("/partner/deletePartner", partnerController.deletePartner);
 router.get("/partner/getAllPartner", partnerController.getAllPartner);
+router.get("/partner/search", partnerController.searchPartners);
 
 //Order
 router.post("/order/createOrder", orderController.createOrder);
@@ -39,6 +43,7 @@ router.put("/order/updateStatusOrder", orderController.updateStatusOrder);
 router.delete("/order/deleteOrder", orderController.deleteOrder);
 router.get("/order/getOrder", orderController.getOrder);
 router.get("/order/getOrderDetail", orderController.getOrderDetail);
+router.get("/order/search", orderController.searchOrders);
 
 //Statistics
 router.get("/statistics", statisticsController.statistic);

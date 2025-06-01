@@ -1,6 +1,7 @@
 import { Response, Request } from "express";
 import { IDoiTac } from "../interfaces/DoiTac";
 import DoiTac from "../models/DoiTac";
+import DoiTacModel from "../models/DoiTac";
 
 export const partnerController = {
   createPartner: async (req: Request, res: Response): Promise<void> => {
@@ -116,11 +117,93 @@ export const partnerController = {
 
   getAllPartner: async (req: Request, res: Response): Promise<void> => {
     try {
-      const doitacs = await DoiTac.find();
-      res.status(200).json({ message: "Danh sách đối tác:", data: doitacs });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+      // const doitacs = await DoiTac.find();
+      const [doitacs, total] = await Promise.all([
+        DoiTac.find().skip(skip).limit(limit),
+        DoiTac.countDocuments(),
+      ]);
+      // res.status(200).json({ message: "Danh sách đối tác:", data: doitacs });
+      res.status(200).json({
+        message: "Danh sách đối tác:",
+        data: doitacs,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
     } catch (err) {
       console.error("Lỗi lấy danh sách đối tác:", err);
       res.status(500).json({ message: "Lỗi hệ thống!" });
     }
+  },
+  searchPartners: async (req: Request, res: Response) => {
+    const { keyword } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    if (!keyword) {
+      res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập từ khóa tìm kiếm",
+      });
+      return;
+    }
+
+    const searchTerm = keyword.toString();
+    const regex = new RegExp(
+      searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      "i"
+    );
+
+    // const partners = await DoiTacModel.find({
+    //   $or: [
+    //     { TenDoiTac: { $regex: regex } },
+    //     { DoiTacId: { $regex: regex } },
+    //     { SDT: { $regex: regex } },
+    //     { NguoiLienLac: { $regex: regex } },
+    //     { DiaChi: { $regex: regex } },
+    //   ],
+    // });
+    const [partners, total] = await Promise.all([
+      DoiTacModel.find({
+        $or: [
+          { TenDoiTac: { $regex: regex } },
+          { DoiTacId: { $regex: regex } },
+          { SDT: { $regex: regex } },
+          { NguoiLienLac: { $regex: regex } },
+          { DiaChi: { $regex: regex } },
+        ],
+      })
+        .skip(skip)
+        .limit(limit),
+      DoiTacModel.countDocuments({
+        $or: [
+          { TenDoiTac: { $regex: regex } },
+          { DoiTacId: { $regex: regex } },
+          { SDT: { $regex: regex } },
+          { NguoiLienLac: { $regex: regex } },
+          { DiaChi: { $regex: regex } },
+        ],
+      }),
+    ]);
+
+    if (partners.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đối tác phù hợp",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: partners,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   },
 };

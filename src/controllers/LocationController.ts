@@ -33,11 +33,20 @@ export const locationController = {
   }),
 
   getAllLocations: asyncHandler(async (req: Request, res: Response) => {
-    const locations = await DiaDiemModel.find();
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const [locations, total] = await Promise.all([
+      DiaDiemModel.find().skip(skip).limit(limit),
+      DiaDiemModel.countDocuments(),
+    ]);
+    // const locations = await DiaDiemModel.find();
     res.status(200).json({
       success: true,
       data: locations,
-      count: locations.length,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
     });
   }),
 
@@ -109,6 +118,10 @@ export const locationController = {
 
   searchLocations: asyncHandler(async (req: Request, res: Response) => {
     const { name } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
     if (!name) {
       res.status(400).json({
         success: false,
@@ -123,10 +136,20 @@ export const locationController = {
       "i"
     );
 
-    const locations = await DiaDiemModel.find({
-      $or: [{ name: { $regex: regex } }, { DiaDiemId: { $regex: regex } }],
-    });
+    // const locations = await DiaDiemModel.find({
+    //   $or: [{ name: { $regex: regex } }, { DiaDiemId: { $regex: regex } }],
+    // });
 
+    const [locations, total] = await Promise.all([
+      DiaDiemModel.find({
+        $or: [{ name: { $regex: regex } }, { DiaDiemId: { $regex: regex } }],
+      })
+        .skip(skip)
+        .limit(limit),
+      DiaDiemModel.countDocuments({
+        $or: [{ name: { $regex: regex } }, { DiaDiemId: { $regex: regex } }],
+      }),
+    ]);
     if (locations.length === 0) {
       res.status(404).json({
         success: false,
@@ -138,7 +161,9 @@ export const locationController = {
     res.status(200).json({
       success: true,
       data: locations,
-      count: locations.length,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
     });
   }),
 };

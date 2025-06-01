@@ -358,38 +358,83 @@ export const authController = {
     }
   },
 
+  // getAllUsers: async (req: Request, res: Response): Promise<void> => {
+  //   try {
+  //     const { role } = req.query;
+
+  //     let users = [];
+  //     switch (role) {
+  //       case "Admin":
+  //         users = await Admin.find().exec();
+  //         break;
+  //       case "KhachHang":
+  //         users = await KhachHang.find().exec();
+  //         break;
+  //       case "NhanVien":
+  //         users = await NhanVien.find().exec();
+  //         break;
+  //       case "TaiXe":
+  //         users = await TaiXe.find().exec();
+  //         break;
+  //       default:
+  //         res.status(400).json({ message: "Role không hợp lệ!" });
+  //         return;
+  //     }
+
+  //     const usersWithRole = users.map((user) => ({
+  //       ...user.toObject(),
+  //       role,
+  //     }));
+
+  //     res.status(200).json({ users: usersWithRole });
+  //   } catch (err) {
+  //     console.error("Lỗi getAllUsers:", err);
+  //     res.status(500).json({ message: "Lỗi hệ thống" });
+  //   }
+  // },
   getAllUsers: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { role } = req.query;
+      const { page = 1, limit = 10, role } = req.query;
 
-      let users = [];
-      switch (role) {
-        case "Admin":
-          users = await Admin.find().exec();
-          break;
-        case "KhachHang":
-          users = await KhachHang.find().exec();
-          break;
-        case "NhanVien":
-          users = await NhanVien.find().exec();
-          break;
-        case "TaiXe":
-          users = await TaiXe.find().exec();
-          break;
-        default:
+      const modelMap: { [key: string]: any } = {
+        Admin,
+        KhachHang,
+        NhanVien,
+        TaiXe,
+      };
+
+      let allUsers: IUser[] = [];
+
+      if (role) {
+        const selectedModel = modelMap[role as string];
+        if (!selectedModel) {
           res.status(400).json({ message: "Role không hợp lệ!" });
           return;
+        }
+
+        const users = await selectedModel.find().exec();
+        allUsers = users.map((u: any) => ({ ...u.toObject(), role }));
+      } else {
+        for (const [roleName, model] of Object.entries(modelMap)) {
+          const users = await model.find().exec();
+          allUsers.push(
+            ...users.map((u: any) => ({ ...u.toObject(), role: roleName }))
+          );
+        }
       }
 
-      const usersWithRole = users.map((user) => ({
-        ...user.toObject(),
-        role,
-      }));
+      const startIndex = (Number(page) - 1) * Number(limit);
+      const pagedUsers = allUsers.slice(startIndex, startIndex + Number(limit));
 
-      res.status(200).json({ users: usersWithRole });
+      res.status(200).json({
+        total: allUsers.length,
+        page: Number(page),
+        limit: Number(limit),
+        users: pagedUsers,
+      });
     } catch (err) {
-      console.error("Lỗi getAllUsers:", err);
-      res.status(500).json({ message: "Lỗi hệ thống" });
+      console.error("Lỗi lấy danh sách người dùng:", err);
+      res.status(500).json({ message: "Lỗi hệ thống!" });
     }
   },
 
@@ -430,6 +475,86 @@ export const authController = {
     } catch (err) {
       console.error("Lỗi xóa tài khoản:", err);
       res.status(500).json({ message: "Lỗi hệ thống!" });
+    }
+  },
+
+  //Search user
+  searchUser: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { keyword } = req.query;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+
+      if (!keyword) {
+        res.status(400).json({
+          success: false,
+          message: "Vui lòng nhập từ khóa tìm kiếm",
+        });
+        return;
+      }
+
+      const searchTerm = keyword.toString();
+      const regex = new RegExp(
+        searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+        "i"
+      );
+
+      const userTypes = [
+        { model: Admin, role: "Admin" },
+        { model: KhachHang, role: "KhachHang" },
+        { model: NhanVien, role: "NhanVien" },
+        { model: TaiXe, role: "TaiXe" },
+      ];
+
+      let allResults: IUser[] = [];
+
+      for (const userType of userTypes) {
+        const results = await userType.model.find({
+          $or: [
+            { HoTen: { $regex: regex } },
+            { UserName: { $regex: regex } },
+            { Email: { $regex: regex } },
+          ],
+        });
+
+        allResults.push(
+          ...(results.map((r) => ({
+            ...r.toObject(),
+            role: userType.role,
+          })) as unknown as IUser[])
+        );
+      }
+
+      const total = allResults.length;
+
+      if (total === 0) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy người dùng phù hợp",
+        });
+        return;
+      }
+
+      // allResults.sort(
+      //   (a, b) => b.createdAt?.getTime() - a.createdAt?.getTime()
+      // );
+
+      const paginatedResults = allResults.slice(skip, skip + limit);
+
+      res.status(200).json({
+        success: true,
+        data: paginatedResults,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
+    } catch (error) {
+      console.error("Lỗi tìm kiếm người dùng:", error);
+      res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi hệ thống",
+      });
     }
   },
 };
