@@ -1,6 +1,5 @@
-import { Response, Request } from "express";
-import DonHang from "../models/DonHang";
-import DonHangModel from "../models/DonHang";
+import { Request, Response } from "express";
+import { default as DonHang, default as DonHangModel } from "../models/DonHang";
 
 export const orderController = {
   createOrder: async (req: Request, res: Response): Promise<void> => {
@@ -205,18 +204,18 @@ export const orderController = {
         message: "Lấy thông tin đơn hàng thành công!",
         order: {
           _id: order._id,
-          id: order.DonHangId,
-          employeeId: order.NhanVienId,
-          sender: order.NguoiGui,
-          receiver: order.NguoiNhan,
-          phone: order.SDT,
-          pickupAddress: order.DiaChiLayHang,
-          deliveryAddress: order.DiaChiGiaoHang,
-          fee: order.CuocPhi,
-          status: order.TrangThai,
-          createdAt: order.CreatedAt,
-          updatedAt: order.UpdatedAt,
-          note: order.GhiChu,
+          DonHangId: order.DonHangId,
+          NhanVienId: order.NhanVienId,
+          NguoiGui: order.NguoiGui,
+          NguoiNhan: order.NguoiNhan,
+          SDT: order.SDT,
+          DiaChiLayHang: order.DiaChiLayHang,
+          DiaChiGiaoHang: order.DiaChiGiaoHang,
+          CuocPhi: order.CuocPhi,
+          TrangThai: order.TrangThai,
+          CreatedAt: order.CreatedAt,
+          UpdatedAt: order.UpdatedAt,
+          GhiChu: order.GhiChu,
         },
       });
     } catch (err) {
