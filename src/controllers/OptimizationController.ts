@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
+import asyncHandler from "express-async-handler";
 import { AntColonyOptimization } from "../algorithms/AntColonyOptimization";
-import { locations } from "../algorithms/Data";
 import { GeneticAlgorithm } from "../algorithms/GeneticAlgorithm";
 import { createDistanceMatrix } from "../algorithms/KhoangCach";
-
-const distanceMatrix = createDistanceMatrix(locations);
+import { IDiaDiem } from "../interfaces/DiaDiem";
+import DiaDiemModel from "../models/DiaDiem";
 
 function calculateEstimatedTime(distance: number): string {
   const averageSpeed = 40; // km/h
@@ -12,41 +12,8 @@ function calculateEstimatedTime(distance: number): string {
   return `${Math.round(hours * 10) / 10} giờ`;
 }
 
-function combineAlgorithms(initialRoute: number[]) {
-  const ga = new GeneticAlgorithm();
-  const gaRoute = ga.run(initialRoute);
-
-  const aco = new AntColonyOptimization();
-  const optimizedRoute = aco.run(gaRoute);
-
-  let totalDistance = 0;
-  const stops = optimizedRoute.map((index: number) => ({
-    id: locations[index].DiaDiemId,
-    name: locations[index].name,
-    address: locations[index].address,
-    coordinates: [locations[index].longitude, locations[index].latitude],
-  }));
-
-  for (let i = 0; i < optimizedRoute.length - 1; i++) {
-    totalDistance += distanceMatrix[optimizedRoute[i]][optimizedRoute[i + 1]];
-  }
-
-  const polyline = optimizedRoute.map((index: number) => [
-    locations[index].longitude,
-    locations[index].latitude,
-  ]);
-
-  return {
-    route: optimizedRoute,
-    stops,
-    totalDistance,
-    polyline,
-    estimatedTime: calculateEstimatedTime(totalDistance),
-  };
-}
-
 export const optimizationController = {
-  optimizeRoute: async (req: Request, res: Response): Promise<void> => {
+  optimizeRoute: asyncHandler(async (req: Request, res: Response) => {
     try {
       const { order } = req.body;
 
@@ -58,17 +25,63 @@ export const optimizationController = {
         return;
       }
 
+      const dbLocations = (await DiaDiemModel.find().lean()) as IDiaDiem[];
+      if (!dbLocations || dbLocations.length === 0) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy dữ liệu bưu cục",
+        });
+        return;
+      }
+
+      // Tạo ma trận khoảng cách
+      const distanceMatrix = createDistanceMatrix(dbLocations);
+
+      const combineAlgorithms = (initialRoute: number[]) => {
+        const ga = new GeneticAlgorithm(dbLocations, distanceMatrix);
+        const gaRoute = ga.run(initialRoute);
+
+        const aco = new AntColonyOptimization(dbLocations, distanceMatrix);
+        return aco.run(gaRoute);
+      };
+
       const initialRoute = Array.from(
-        { length: locations.length },
+        { length: dbLocations.length },
         (_, i) => i
       ).sort(() => Math.random() - 0.5);
 
-      const result = combineAlgorithms(initialRoute);
+      const optimizedRoute = combineAlgorithms(initialRoute);
+
+      // Tính toán kết quả
+      let totalDistance = 0;
+      const stops = optimizedRoute.map((index: number) => ({
+        id: dbLocations[index].DiaDiemId,
+        name: dbLocations[index].name,
+        address: dbLocations[index].address,
+        coordinates: [
+          dbLocations[index].longitude,
+          dbLocations[index].latitude,
+        ],
+      }));
+
+      for (let i = 0; i < optimizedRoute.length - 1; i++) {
+        totalDistance +=
+          distanceMatrix[optimizedRoute[i]][optimizedRoute[i + 1]];
+      }
+
+      const polyline = optimizedRoute.map((index: number) => [
+        dbLocations[index].longitude,
+        dbLocations[index].latitude,
+      ]);
 
       res.status(200).json({
         success: true,
         data: {
-          ...result,
+          route: optimizedRoute,
+          stops,
+          totalDistance,
+          polyline,
+          estimatedTime: calculateEstimatedTime(totalDistance),
           order,
         },
       });
@@ -79,5 +92,5 @@ export const optimizationController = {
         message: "Lỗi server khi tối ưu lộ trình",
       });
     }
-  },
+  }),
 };

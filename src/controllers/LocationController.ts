@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import DiaDiemModel from "../models/DiaDiem";
-import { IDiaDiem } from "../interfaces/DiaDiem";
 
 export const locationController = {
   createLocation: asyncHandler(async (req: Request, res: Response) => {
-    const { DiaDiemId, name, latitude, longitude } = req.body;
+    const { DiaDiemId, name, address, latitude, longitude } = req.body;
 
     const existingLocation = await DiaDiemModel.findOne({ DiaDiemId });
     if (existingLocation) {
@@ -19,6 +18,7 @@ export const locationController = {
     const newLocation = new DiaDiemModel({
       DiaDiemId,
       name,
+      address,
       latitude,
       longitude,
     });
