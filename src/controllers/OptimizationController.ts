@@ -46,15 +46,16 @@ function combineAlgorithms(initialRoute: number[]) {
 }
 
 export const optimizationController = {
-  optimizeRoute: async (req: Request, res: Response) => {
+  optimizeRoute: async (req: Request, res: Response): Promise<void> => {
     try {
       const { order } = req.body;
 
       if (!order) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Thiếu thông tin đơn hàng",
         });
+        return;
       }
 
       const initialRoute = Array.from(
