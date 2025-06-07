@@ -163,7 +163,7 @@ export const optimizationController = {
           address: pickupLocation.address,
           longitude: pickupLocation.longitude,
           latitude: pickupLocation.latitude,
-          arrivalTime: formatArrivalTime(1), // +1 giờ
+          arrivalTime: formatArrivalTime(1),
           type: "pickup",
         },
         {
