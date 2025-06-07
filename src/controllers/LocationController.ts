@@ -4,7 +4,15 @@ import DiaDiemModel from "../models/DiaDiem";
 
 export const locationController = {
   createLocation: asyncHandler(async (req: Request, res: Response) => {
-    const { DiaDiemId, name, address, latitude, longitude } = req.body;
+    const {
+      DiaDiemId,
+      name,
+      address,
+      district,
+      province,
+      latitude,
+      longitude,
+    } = req.body;
 
     const existingLocation = await DiaDiemModel.findOne({ DiaDiemId });
     if (existingLocation) {
@@ -19,6 +27,8 @@ export const locationController = {
       DiaDiemId,
       name,
       address,
+      district,
+      province,
       latitude,
       longitude,
     });
