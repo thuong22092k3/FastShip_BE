@@ -133,23 +133,23 @@ export const optimizationController = {
       });
     }
   }),
-  async getDeliveryRoute(req: Request, res: Response) {
+
+  getDeliveryRoute: asyncHandler(async (req: Request, res: Response) => {
     try {
       const { orderId } = req.params;
 
       const order = await DonHangModel.findById(orderId);
       if (!order) {
-        return res.status(404).json({ message: "Order not found" });
+        res.status(404).json({ message: "Order not found" });
+        return;
       }
 
-      // Tìm bưu cục gần nhất với địa chỉ gửi/nhận
       const pickupLocation = await findNearestLocation(order.DiaChiLayHang);
       const deliveryLocation = await findNearestLocation(order.DiaChiGiaoHang);
 
       if (!pickupLocation || !deliveryLocation) {
-        return res
-          .status(404)
-          .json({ message: "Không tìm thấy bưu cục phù hợp" });
+        res.status(404).json({ message: "Không tìm thấy bưu cục phù hợp" });
+        return;
       }
 
       const transitLocation = await DiaDiemModel.findOne({
@@ -175,7 +175,7 @@ export const optimizationController = {
           latitude:
             transitLocation?.latitude ||
             (pickupLocation.latitude + deliveryLocation.latitude) / 2,
-          arrivalTime: formatArrivalTime(24), // +1 ngày
+          arrivalTime: formatArrivalTime(24),
           type: "transit",
         },
         {
@@ -183,7 +183,7 @@ export const optimizationController = {
           address: deliveryLocation.address,
           longitude: deliveryLocation.longitude,
           latitude: deliveryLocation.latitude,
-          arrivalTime: formatArrivalTime(48), // +2 ngày
+          arrivalTime: formatArrivalTime(48),
           type: "delivery",
         },
       ];
@@ -211,7 +211,7 @@ export const optimizationController = {
         message: "Internal server error",
       });
     }
-  },
+  }),
 };
 
 async function findNearestLocation(address: string): Promise<IDiaDiem | null> {
