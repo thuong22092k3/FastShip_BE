@@ -1,14 +1,13 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import { authController } from "../controllers/AuthController";
-import { vehicleController } from "../controllers/VehicleController";
-import { partnerController } from "../controllers/PartnerController";
-import { orderController } from "../controllers/OrderController";
-import { statisticsController } from "../controllers/StatisticsController";
-import { optimizationController } from "../controllers/OptimizationController";
 import { locationController } from "../controllers/LocationController";
+import { optimizationController } from "../controllers/OptimizationController";
+import { orderController } from "../controllers/OrderController";
+import { partnerController } from "../controllers/PartnerController";
+import { statisticsController } from "../controllers/StatisticsController";
+import { vehicleController } from "../controllers/VehicleController";
 
 const router = express.Router();
-
 //Authentication
 router.post("/auth/login", authController.loginUser);
 router.post("/auth/createUser", authController.createUser);

@@ -1,59 +1,82 @@
 import { Request, Response } from "express";
-import { IDiaDiem } from "../interfaces/DiaDiem";
-import { IDonHang } from "../interfaces/DonHang";
-import { GeneticAlgorithm } from "../algorithms/GeneticAlgorithm";
 import { AntColonyOptimization } from "../algorithms/AntColonyOptimization";
 import { locations } from "../algorithms/Data";
+import { GeneticAlgorithm } from "../algorithms/GeneticAlgorithm";
 import { createDistanceMatrix } from "../algorithms/KhoangCach";
 
 const distanceMatrix = createDistanceMatrix(locations);
 
-class OptimizationController {
-  private combineAlgorithms(initialRoute: number[]): number[] {
-    const ga = new GeneticAlgorithm();
-    const gaRoute = ga.run(initialRoute);
+function calculateEstimatedTime(distance: number): string {
+  const averageSpeed = 40; // km/h
+  const hours = distance / averageSpeed;
+  return `${Math.round(hours * 10) / 10} giờ`;
+}
 
-    const aco = new AntColonyOptimization();
-    const optimizedRoute = aco.run(gaRoute);
+function combineAlgorithms(initialRoute: number[]) {
+  const ga = new GeneticAlgorithm();
+  const gaRoute = ga.run(initialRoute);
 
-    return optimizedRoute;
+  const aco = new AntColonyOptimization();
+  const optimizedRoute = aco.run(gaRoute);
+
+  let totalDistance = 0;
+  const stops = optimizedRoute.map((index: number) => ({
+    id: locations[index].DiaDiemId,
+    name: locations[index].name,
+    address: locations[index].address,
+    coordinates: [locations[index].longitude, locations[index].latitude],
+  }));
+
+  for (let i = 0; i < optimizedRoute.length - 1; i++) {
+    totalDistance += distanceMatrix[optimizedRoute[i]][optimizedRoute[i + 1]];
   }
 
-  public optimizeRoute(req: Request, res: Response) {
+  const polyline = optimizedRoute.map((index: number) => [
+    locations[index].longitude,
+    locations[index].latitude,
+  ]);
+
+  return {
+    route: optimizedRoute,
+    stops,
+    totalDistance,
+    polyline,
+    estimatedTime: calculateEstimatedTime(totalDistance),
+  };
+}
+
+export const optimizationController = {
+  optimizeRoute: async (req: Request, res: Response) => {
     try {
       const { order } = req.body;
 
-      // Tạo route ban đầu ngẫu nhiên
+      if (!order) {
+        return res.status(400).json({
+          success: false,
+          message: "Thiếu thông tin đơn hàng",
+        });
+      }
+
       const initialRoute = Array.from(
         { length: locations.length },
         (_, i) => i
-      );
-      for (let i = initialRoute.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [initialRoute[i], initialRoute[j]] = [initialRoute[j], initialRoute[i]];
-      }
+      ).sort(() => Math.random() - 0.5);
 
-      const optimizedRoute = this.combineAlgorithms(initialRoute);
-
-      let totalDistance = 0;
-      for (let i = 0; i < optimizedRoute.length - 1; i++) {
-        totalDistance +=
-          distanceMatrix[optimizedRoute[i]][optimizedRoute[i + 1]];
-      }
+      const result = combineAlgorithms(initialRoute);
 
       res.status(200).json({
         success: true,
-        route: optimizedRoute.map((index) => locations[index]),
-        totalDistance: totalDistance.toFixed(2),
-        order,
+        data: {
+          ...result,
+          order,
+        },
       });
     } catch (error) {
+      console.error("Lỗi khi tối ưu lộ trình:", error);
       res.status(500).json({
         success: false,
-        message: "Lỗi khi tối ưu lộ trình",
+        message: "Lỗi server khi tối ưu lộ trình",
       });
     }
-  }
-}
-
-export const optimizationController = new OptimizationController();
+  },
+};
