@@ -136,17 +136,23 @@ export const optimizationController = {
 
   getDeliveryRoute: asyncHandler(async (req: Request, res: Response) => {
     try {
-      const { orderId } = req.params;
+      // const { orderId } = req.params;
 
-      const order = await DonHangModel.findById(orderId);
+      // const order = await DonHangModel.findById(orderId);
+      // if (!order) {
+      //   res.status(404).json({ message: "Order not found" });
+      //   return;
+      // }
+      const { orderId } = req.params;
+      const order = await DonHangModel.findOne({ DonHangId: orderId });
       if (!order) {
-        res.status(404).json({ message: "Order not found" });
+        res.status(404).json({ message: "Không tìm thấy đơn hàng" });
         return;
       }
-
       const pickupLocation = await findNearestLocation(order.DiaChiLayHang);
       const deliveryLocation = await findNearestLocation(order.DiaChiGiaoHang);
-
+      console.log("pickupLocation", pickupLocation);
+      console.log("deliveryLocation", deliveryLocation);
       if (!pickupLocation || !deliveryLocation) {
         res.status(404).json({ message: "Không tìm thấy bưu cục phù hợp" });
         return;
