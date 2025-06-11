@@ -50,6 +50,16 @@ const DonHangSchema = new Schema<IDonHang>({
     type: "String",
     required: true,
   },
+
+  deliveryMethod: { type: "String" },
+  payer: { type: "String" },
+  additionalServices: [{ type: "String" }],
+  packageInfo: {
+    length: { type: "Number" },
+    width: { type: "Number" },
+    height: { type: "Number" },
+    weight: { type: "Number" },
+  },
 });
 
 const DonHangModel = model<IDonHang>("DonHang", DonHangSchema);

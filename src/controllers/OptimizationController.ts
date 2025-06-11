@@ -143,7 +143,7 @@ export const optimizationController = {
       //   res.status(404).json({ message: "Order not found" });
       //   return;
       // }
-      const { orderId } = req.params;
+      const { orderId } = req.query;
       const order = await DonHangModel.findOne({ DonHangId: orderId });
       if (!order) {
         res.status(404).json({ message: "Không tìm thấy đơn hàng" });

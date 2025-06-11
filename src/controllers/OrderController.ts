@@ -14,6 +14,10 @@ export const orderController = {
         CuocPhi,
         TrangThai,
         GhiChu,
+        deliveryMethod,
+        payer,
+        additionalServices,
+        packageInfo,
       } = req.body;
 
       if (
@@ -42,6 +46,10 @@ export const orderController = {
         CreatedAt: new Date(),
         UpdatedAt: new Date(),
         GhiChu,
+        deliveryMethod,
+        payer,
+        additionalServices,
+        packageInfo,
       });
 
       await newOrder.save();

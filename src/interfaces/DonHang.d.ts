@@ -11,4 +11,14 @@ export interface IDonHang {
   CreatedAt: string;
   UpdatedAt: string;
   GhiChu: string;
+
+  deliveryMethod?: string;
+  payer?: string;
+  additionalServices?: string[];
+  packageInfo?: {
+    length: number;
+    width: number;
+    height: number;
+    weight: number;
+  };
 }
