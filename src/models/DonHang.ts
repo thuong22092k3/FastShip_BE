@@ -4,61 +4,61 @@ import { IDonHang } from "../interfaces/DonHang";
 const DonHangSchema = new Schema<IDonHang>({
   DonHangId: {
     type: "String",
-    required: true,
+    required: false,
   },
   NhanVienId: {
     type: "String",
-    required: true,
+    required: false,
   },
   NguoiGui: {
     type: "String",
-    required: true,
+    required: false,
   },
   NguoiNhan: {
     type: "String",
-    required: true,
+    required: false,
   },
   SDT: {
     type: "String",
-    required: true,
+    required: false,
   },
   DiaChiLayHang: {
     type: "String",
-    required: true,
+    required: false,
   },
   DiaChiGiaoHang: {
     type: "String",
-    required: true,
+    required: false,
   },
   CuocPhi: {
     type: "Number",
-    required: true,
+    required: false,
   },
   TrangThai: {
     type: "String",
-    required: true,
+    required: false,
   },
   CreatedAt: {
     type: "String",
-    required: true,
+    required: false,
   },
   UpdatedAt: {
     type: "String",
-    required: true,
+    required: false,
   },
   GhiChu: {
     type: "String",
-    required: true,
+    required: false,
   },
 
-  deliveryMethod: { type: "String" },
-  payer: { type: "String" },
-  additionalServices: [{ type: "String" }],
+  deliveryMethod: { type: "String", required: false },
+  payer: { type: "String", required: false },
+  additionalServices: [{ type: "String", required: false }],
   packageInfo: {
-    length: { type: "Number" },
-    width: { type: "Number" },
-    height: { type: "Number" },
-    weight: { type: "Number" },
+    length: { type: "Number", required: false },
+    width: { type: "Number", required: false },
+    height: { type: "Number", required: false },
+    weight: { type: "Number", required: false },
   },
 });
 
