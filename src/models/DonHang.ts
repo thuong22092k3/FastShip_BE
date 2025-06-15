@@ -52,8 +52,17 @@ const DonHangSchema = new Schema<IDonHang>({
   },
 
   deliveryMethod: { type: "String", required: false },
-  payer: { type: "String", required: false },
-  additionalServices: [{ type: "String", required: false }],
+  payer: {
+    type: String,
+    enum: ["sender", "receiver"],
+    default: "sender",
+  },
+  additionalServices: [
+    {
+      type: String,
+      enum: ["viewBeforePay", "codCheck", "insurance"],
+    },
+  ],
   packageInfo: {
     length: { type: "Number", required: false },
     width: { type: "Number", required: false },

@@ -1,6 +1,23 @@
 import { Request, Response } from "express";
 import { default as DonHang, default as DonHangModel } from "../models/DonHang";
+const calculateShippingFee = (
+  packageInfo: any,
+  additionalServices: string[]
+) => {
+  const { length, width, height, weight } = packageInfo;
+  const volume = (length * width * height) / 5000;
+  const baseFee = Math.max(volume, weight) * 10000;
 
+  let serviceFee = 0;
+  if (additionalServices.includes("insurance")) {
+    serviceFee += 5000;
+  }
+  if (additionalServices.includes("codCheck")) {
+    serviceFee += 3000;
+  }
+
+  return baseFee + serviceFee;
+};
 export const orderController = {
   createOrder: async (req: Request, res: Response): Promise<void> => {
     try {
@@ -11,7 +28,7 @@ export const orderController = {
         SDT,
         DiaChiLayHang,
         DiaChiGiaoHang,
-        CuocPhi,
+
         TrangThai,
         GhiChu,
         deliveryMethod,
@@ -33,7 +50,10 @@ export const orderController = {
           .json({ message: "Vui lòng nhập đầy đủ thông tin đơn hàng!" });
         return;
       }
-
+      const CuocPhi = calculateShippingFee(
+        packageInfo,
+        additionalServices || []
+      );
       const newOrder = new DonHang({
         DonHangId: `DH_${Date.now()}`,
         NhanVienId,
