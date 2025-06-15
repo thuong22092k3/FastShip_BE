@@ -60,6 +60,12 @@ const DonHangSchema = new Schema<IDonHang>({
     height: { type: "Number", required: false },
     weight: { type: "Number", required: false },
   },
+  packageType: {
+    type: String,
+    enum: ["document", "parcel", "heavy_parcel", "fragile"],
+    required: false,
+    default: "parcel",
+  },
 });
 
 const DonHangModel = model<IDonHang>("DonHang", DonHangSchema);

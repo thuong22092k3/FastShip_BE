@@ -18,6 +18,7 @@ export const orderController = {
         payer,
         additionalServices,
         packageInfo,
+        packageType,
       } = req.body;
 
       if (
@@ -50,6 +51,7 @@ export const orderController = {
         payer,
         additionalServices,
         packageInfo,
+        packageType: packageType || "parcel",
       });
 
       await newOrder.save();

@@ -21,4 +21,5 @@ export interface IDonHang {
     height: number;
     weight: number;
   };
+  packageType?: "document" | "parcel" | "heavy_parcel" | "fragile";
 }
