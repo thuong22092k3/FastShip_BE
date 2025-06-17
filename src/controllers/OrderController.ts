@@ -28,7 +28,7 @@ export const orderController = {
         SDT,
         DiaChiLayHang,
         DiaChiGiaoHang,
-
+        CuocPhi,
         TrangThai,
         GhiChu,
         deliveryMethod,
@@ -50,10 +50,10 @@ export const orderController = {
           .json({ message: "Vui lòng nhập đầy đủ thông tin đơn hàng!" });
         return;
       }
-      const CuocPhi = calculateShippingFee(
-        packageInfo,
-        additionalServices || []
-      );
+      // const CuocPhi = calculateShippingFee(
+      //   packageInfo,
+      //   additionalServices || []
+      // );
       const newOrder = new DonHang({
         DonHangId: `DH_${Date.now()}`,
         NhanVienId,
