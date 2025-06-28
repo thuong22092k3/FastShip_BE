@@ -179,23 +179,23 @@ export const orderController = {
   },
   getOrder: async (req: Request, res: Response): Promise<void> => {
     try {
-      // Giả sử user được truyền qua query params hoặc body
-      const user = req.query.user || req.body.user;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const role = req.query.role as string;
+      const id = req.query.id as string;
 
-      if (!user || !user.role || !user.id) {
+      if (!role || !id) {
         res.status(401).json({ message: "Thiếu thông tin người dùng" });
         return;
       }
 
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
       const skip = (page - 1) * limit;
 
       let query = {};
-      if (user.role === "NhanVien") {
-        query = { NhanVienID: user.id };
-      } else if (user.role === "TaiXe") {
-        query = { TaiXeID: user.id };
+      if (role === "NhanVien") {
+        query = { NhanVienID: id };
+      } else if (role === "TaiXe") {
+        query = { TaiXeID: id };
       }
 
       const [orders, total] = await Promise.all([
