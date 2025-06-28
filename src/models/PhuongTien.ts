@@ -37,6 +37,10 @@ const PhuongTienSchema = new Schema<IPhuongTien>({
     type: "String",
     required: true,
   },
+  ThoiGianBaoDuong: {
+    type: "String",
+    required: false,
+  },
 });
 
 const PhuongTienModel = model<IPhuongTien>("PhuongTien", PhuongTienSchema);

@@ -7,4 +7,5 @@ export interface IPhuongTien {
   SucChua: number;
   TrangThai: string;
   BaoDuong: string;
+  ThoiGianBaoDuong?: string;
 }
