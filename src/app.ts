@@ -72,11 +72,41 @@ mongoose
 
       const distanceMatrix = createDistanceMatrix(locations);
 
-      const ga = new GeneticAlgorithm(locations, distanceMatrix);
-      const initialRoute = ga.run();
+      // const ga = new GeneticAlgorithm(locations, distanceMatrix);
+      // const initialRoute = ga.run();
 
-      const aco = new AntColonyOptimization(locations, distanceMatrix);
-      const optimizedRoute = aco.run(initialRoute);
+      // const aco = new AntColonyOptimization(locations, distanceMatrix);
+      // const optimizedRoute = aco.run(initialRoute);
+
+      const startIdx = 0; // Ví dụ: điểm bắt đầu là index 0
+      const endIdx = locations.length - 1; // Điểm kết thúc là index cuối cùng
+
+      // Khởi tạo GA với đủ tham số
+      const ga = new GeneticAlgorithm(
+        locations,
+        distanceMatrix,
+        startIdx, // Thêm điểm bắt đầu
+        endIdx // Thêm điểm kết thúc
+      );
+
+      // Tạo danh sách điểm trung gian (loại bỏ điểm đầu và cuối)
+      const intermediatePoints = locations
+        .map((_, idx) => idx)
+        .filter((idx) => idx !== startIdx && idx !== endIdx);
+
+      // Chạy GA với danh sách điểm trung gian
+      const gaRoute = ga.run(intermediatePoints);
+
+      // Khởi tạo ACO với đủ tham số
+      const aco = new AntColonyOptimization(
+        locations,
+        distanceMatrix,
+        startIdx, // Thêm điểm bắt đầu
+        endIdx // Thêm điểm kết thúc
+      );
+
+      // Chạy ACO với route từ GA
+      const optimizedRoute = aco.run(gaRoute);
       console.log("Lộ trình tối ưu:", optimizedRoute);
     } catch (err) {
       console.error("Lỗi khi chạy thuật toán:", err);
