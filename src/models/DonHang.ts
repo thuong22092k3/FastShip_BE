@@ -6,7 +6,7 @@ const DonHangSchema = new Schema<IDonHang>({
     type: "String",
     required: false,
   },
-  NhanVienId: {
+  NhanVienID: {
     type: "String",
     required: false,
   },
@@ -75,7 +75,7 @@ const DonHangSchema = new Schema<IDonHang>({
     required: false,
     default: "parcel",
   },
-  TaiXeId: {
+  TaiXeID: {
     type: "String",
     required: false,
   },

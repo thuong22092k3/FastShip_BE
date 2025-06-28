@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Request, Response } from "express";
 import DonHang from "../models/DonHang";
 
 export const statisticsController = {
@@ -10,7 +10,7 @@ export const statisticsController = {
         TrangThai,
         DiaChiGiaoHang,
         NguoiGui,
-        NhanVienId,
+        NhanVienID,
       } = req.query;
 
       const query: any = {};
@@ -34,8 +34,8 @@ export const statisticsController = {
         query.NguoiGui = NguoiGui;
       }
 
-      if (NhanVienId) {
-        query.NhanVienId = NhanVienId;
+      if (NhanVienID) {
+        query.NhanVienID = NhanVienID;
       }
 
       const orders = await DonHang.find(query);

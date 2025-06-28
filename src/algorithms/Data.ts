@@ -288,7 +288,7 @@ export const locations: IDiaDiem[] = [
 export const demoOrders: IDonHang[] = [
   {
     DonHangId: "DH001",
-    NhanVienId: "NV001",
+    NhanVienID: "NV001",
     NguoiGui: "Nguyễn Văn A",
     NguoiNhan: "Trần Thị B",
     SDT: "0909123456",
@@ -312,7 +312,7 @@ export const demoOrders: IDonHang[] = [
   },
   {
     DonHangId: "DH002",
-    NhanVienId: "NV002",
+    NhanVienID: "NV002",
     NguoiGui: "Lê Thị C",
     NguoiNhan: "Phạm Văn D",
     SDT: "0912345678",
@@ -336,7 +336,7 @@ export const demoOrders: IDonHang[] = [
   },
   {
     DonHangId: "DH003",
-    NhanVienId: "NV003",
+    NhanVienID: "NV003",
     NguoiGui: "Trần Văn E",
     NguoiNhan: "Lê Thị F",
     SDT: "0987654321",

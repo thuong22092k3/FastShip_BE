@@ -1,5 +1,5 @@
 export interface INhanVien {
-  NhanVienId: string;
+  NhanVienID: string;
   HoTen: string;
   UserName: string;
   Password: string;

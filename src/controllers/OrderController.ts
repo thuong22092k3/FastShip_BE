@@ -22,7 +22,7 @@ export const orderController = {
   createOrder: async (req: Request, res: Response): Promise<void> => {
     try {
       const {
-        NhanVienId,
+        NhanVienID,
         NguoiGui,
         NguoiNhan,
         SDT,
@@ -56,7 +56,7 @@ export const orderController = {
       // );
       const newOrder = new DonHang({
         DonHangId: `DH_${Date.now()}`,
-        NhanVienId,
+        NhanVienID,
         NguoiGui,
         NguoiNhan,
         SDT,
@@ -186,9 +186,9 @@ export const orderController = {
       const user = (req as any).user;
       let query = {};
       if (user.role === "NhanVien") {
-        query = { NhanVienId: user.id };
+        query = { NhanVienID: user.id };
       } else if (user.role === "TaiXe") {
-        query = { TaiXeId: user.id };
+        query = { TaiXeID: user.id };
       }
       // const [orders, total] = await Promise.all([
       //   DonHangModel.find().skip(skip).limit(limit),
@@ -247,7 +247,7 @@ export const orderController = {
         order: {
           _id: order._id,
           DonHangId: order.DonHangId,
-          NhanVienId: order.NhanVienId,
+          NhanVienID: order.NhanVienID,
           NguoiGui: order.NguoiGui,
           NguoiNhan: order.NguoiNhan,
           SDT: order.SDT,

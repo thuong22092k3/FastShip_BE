@@ -1,6 +1,6 @@
 export interface IDonHang {
   DonHangId: string;
-  NhanVienId: string;
+  NhanVienID: string;
   NguoiGui: string;
   NguoiNhan: string;
   SDT: string;
@@ -22,5 +22,5 @@ export interface IDonHang {
     weight: number;
   };
   packageType?: "document" | "parcel" | "heavy_parcel" | "fragile";
-  TaiXeId?: string;
+  TaiXeID?: string;
 }
