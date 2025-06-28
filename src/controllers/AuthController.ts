@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import { Request, Response } from "express";
+import { IUser } from "../interfaces/User";
 import Admin from "../models/Admin";
 import KhachHang from "../models/KhachHang";
 import NhanVien from "../models/NhanVien";
 import TaiXe from "../models/TaiXe";
-import { IUser } from "../interfaces/User";
 
 export const authController = {
   // Đăng nhập
@@ -54,7 +54,16 @@ export const authController = {
       res.status(200).json({
         message: "Đăng nhập thành công",
         user: {
-          id: user._id,
+          id:
+            userRole === "Admin"
+              ? user.AdminID
+              : userRole === "KhachHang"
+              ? user.KhachHangID
+              : userRole === "NhanVien"
+              ? user.NhanVienID
+              : userRole === "TaiXe"
+              ? user.TaiXeID
+              : user._id,
           UserName: user.UserName,
           HoTen: user.HoTen,
           role: userRole,
