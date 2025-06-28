@@ -84,42 +84,7 @@ export const orderController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
-  // updateStatusOrder: async (req: Request, res: Response): Promise<void> => {
-  //   try {
-  //     // Đọc từ query thay vì params
-  //     const { id } = req.query;
-  //     const { TrangThai } = req.body;
 
-  //     if (!id) {
-  //       res.status(400).json({ message: "Vui lòng cung cấp ID đơn hàng!" });
-  //       return;
-  //     }
-
-  //     if (!TrangThai) {
-  //       res.status(400).json({ message: "Vui lòng cung cấp trạng thái mới!" });
-  //       return;
-  //     }
-
-  //     const updatedOrder = await DonHang.findOneAndUpdate(
-  //       { DonHangId: id },
-  //       { TrangThai, UpdatedAt: new Date() },
-  //       { new: true }
-  //     );
-
-  //     if (!updatedOrder) {
-  //       res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
-  //       return;
-  //     }
-
-  //     res.status(200).json({
-  //       message: "Cập nhật trạng thái thành công!",
-  //       order: updatedOrder,
-  //     });
-  //   } catch (err) {
-  //     console.error("Lỗi cập nhật trạng thái:", err);
-  //     res.status(500).json({ message: "Lỗi hệ thống" });
-  //   }
-  // },
   updateStatusOrder: async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.query;
@@ -258,90 +223,6 @@ export const orderController = {
     }
   },
 
-  // searchOrders: async (req: Request, res: Response) => {
-  //   const { keyword } = req.query;
-  //   const page = parseInt(req.query.page as string) || 1;
-  //   const limit = parseInt(req.query.limit as string) || 10;
-  //   const skip = (page - 1) * limit;
-
-  //   if (!keyword || keyword.toString().trim() === "") {
-  //     return res.status(400).json({
-  //       success: false,
-  //       message: "Vui lòng nhập từ khóa tìm kiếm",
-  //     });
-  //   }
-
-  //   const normalizeVietnamese = (str: string) => {
-  //     return str
-  //       .normalize("NFD")
-  //       .replace(/[\u0300-\u036f]/g, "")
-  //       .replace(/đ/g, "d")
-  //       .replace(/Đ/g, "D")
-  //       .toLowerCase();
-  //   };
-
-  //   const searchTerm = keyword.toString().trim();
-  //   const normalizedSearch = normalizeVietnamese(searchTerm);
-
-  //   const regexPattern = normalizedSearch
-  //     .split("")
-  //     .map((char) => {
-  //       const mappings: Record<string, string> = {
-  //         a: "[aàáảãạăằắẳẵặâầấẩẫậ]",
-  //         d: "[dđ]",
-  //         e: "[eèéẻẽẹêềếểễệ]",
-  //         i: "[iìíỉĩị]",
-  //         o: "[oòóỏõọôồốổỗộơờớởỡợ]",
-  //         u: "[uùúủũụưừứửữự]",
-  //         y: "[yỳýỷỹỵ]",
-  //       };
-  //       return mappings[char] || char;
-  //     })
-  //     .join(".*");
-
-  //   const regex = new RegExp(regexPattern, "i");
-
-  //   const searchFields = [
-  //     { NguoiGui: { $regex: regex } },
-  //     { DonHangId: { $regex: regex } },
-  //     { NguoiNhan: { $regex: regex } },
-  //     { SDT: { $regex: regex } },
-  //     { DiaChiLayHang: { $regex: regex } },
-  //     { DiaChiGiaoHang: { $regex: regex } },
-  //   ];
-
-  //   try {
-  //     const [orders, total] = await Promise.all([
-  //       DonHangModel.find({ $or: searchFields }).skip(skip).limit(limit),
-  //       DonHangModel.countDocuments({ $or: searchFields }),
-  //     ]);
-
-  //     if (!orders.length) {
-  //       return res.status(200).json({
-  //         success: true,
-  //         data: [],
-  //         total: 0,
-  //         page,
-  //         totalPages: 0,
-  //         message: "Không tìm thấy đơn hàng phù hợp",
-  //       });
-  //     }
-
-  //     return res.status(200).json({
-  //       success: true,
-  //       data: orders,
-  //       total,
-  //       page,
-  //       totalPages: Math.ceil(total / limit),
-  //     });
-  //   } catch (error) {
-  //     console.error("Search error:", error);
-  //     return res.status(500).json({
-  //       success: false,
-  //       message: "Lỗi hệ thống khi tìm kiếm đơn hàng",
-  //     });
-  //   }
-  // },
   searchOrders: async (req: Request, res: Response) => {
     const { keyword } = req.query;
     const page = parseInt(req.query.page as string) || 1;
@@ -436,5 +317,36 @@ export const orderController = {
       page,
       totalPages: Math.ceil(total / limit),
     });
+  },
+  assignDriver: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { donHangId, taiXeId } = req.body;
+
+      if (!donHangId || !taiXeId) {
+        res
+          .status(400)
+          .json({ message: "Vui lòng cung cấp DonHangId và TaiXeID!" });
+        return;
+      }
+
+      const order = await DonHangModel.findOne({ DonHangId: donHangId });
+
+      if (!order) {
+        res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
+        return;
+      }
+
+      order.TaiXeID = taiXeId;
+      order.UpdatedAt = new Date().toISOString();
+      await order.save();
+
+      res.status(200).json({
+        message: "Giao đơn hàng cho tài xế thành công!",
+        order,
+      });
+    } catch (err) {
+      console.error("Lỗi giao đơn hàng:", err);
+      res.status(500).json({ message: "Lỗi hệ thống" });
+    }
   },
 };

@@ -43,6 +43,7 @@ router.delete("/order/deleteOrder", orderController.deleteOrder);
 router.get("/order/getOrder", orderController.getOrder);
 router.get("/order/getOrderDetail", orderController.getOrderDetail);
 router.get("/order/search", orderController.searchOrders);
+router.post("/order/assignDriver", orderController.assignDriver);
 
 //Statistics
 router.get("/statistics", statisticsController.statistic);
