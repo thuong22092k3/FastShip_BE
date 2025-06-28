@@ -1,11 +1,28 @@
+import { RouteConstraints } from "../controllers/OptimizationController";
 import { IDiaDiem } from "../interfaces/DiaDiem";
 
 export class GeneticAlgorithm {
+  private population: number[][];
+  // constructor(
+  //   private locations: IDiaDiem[],
+  //   private distanceMatrix: number[][],
+  //   private startIdx: number,
+  //   private endIdx: number,
+  //   private populationSize: number = 50,
+  //   private mutationRate: number = 0.1,
+  //   private generations: number = 100,
+  //   private elitismCount: number = 2,
+  //   private constraints: RouteConstraints
+  // ) {
+  //   this.population = [];
+  // }
+
   constructor(
     private locations: IDiaDiem[],
     private distanceMatrix: number[][],
     private startIdx: number,
     private endIdx: number,
+    private constraints: RouteConstraints,
     private populationSize: number = 50,
     private mutationRate: number = 0.1,
     private generations: number = 100,
@@ -14,20 +31,55 @@ export class GeneticAlgorithm {
     this.population = [];
   }
 
-  private population: number[][];
+  private isValidRoute(route: number[]): boolean {
+    if (route.length > this.constraints.maxStops) {
+      return false;
+    }
+
+    if (route[0] !== this.startIdx || route[route.length - 1] !== this.endIdx) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // createIndividual(intermediatePoints: number[]): number[] {
+  //   const route = [...intermediatePoints].sort(() => Math.random() - 0.5);
+  //   return [this.startIdx, ...route, this.endIdx];
+  // }
 
   createIndividual(intermediatePoints: number[]): number[] {
-    const route = [...intermediatePoints].sort(() => Math.random() - 0.5);
-    return [this.startIdx, ...route, this.endIdx];
+    const maxIntermediate = this.constraints.maxStops - 2;
+    const limitedPoints = intermediatePoints.slice(0, maxIntermediate);
+
+    const shuffled = [...limitedPoints].sort(() => Math.random() - 0.5);
+
+    return [this.startIdx, ...shuffled, this.endIdx];
   }
 
   evaluate(route: number[]): number {
+    if (!this.isValidRoute(route)) {
+      return Infinity;
+    }
+
     let distance = 0;
     for (let i = 0; i < route.length - 1; i++) {
       distance += this.distanceMatrix[route[i]][route[i + 1]];
     }
-    return distance;
+
+    const stopPenalty =
+      Math.max(0, this.constraints.maxStops - 2 - (route.length - 2)) * 10;
+
+    return distance + stopPenalty;
   }
+
+  // evaluate(route: number[]): number {
+  //   let distance = 0;
+  //   for (let i = 0; i < route.length - 1; i++) {
+  //     distance += this.distanceMatrix[route[i]][route[i + 1]];
+  //   }
+  //   return distance;
+  // }
 
   select(): number[] {
     const tournamentSize = 5;
@@ -78,6 +130,34 @@ export class GeneticAlgorithm {
     }
   }
 
+  // run(intermediatePoints: number[]): number[] {
+  //   this.population = Array.from({ length: this.populationSize }, () =>
+  //     this.createIndividual(intermediatePoints)
+  //   );
+
+  //   for (let gen = 0; gen < this.generations; gen++) {
+  //     this.population.sort((a, b) => this.evaluate(a) - this.evaluate(b));
+
+  //     const newPopulation: number[][] = [];
+
+  //     for (let i = 0; i < this.elitismCount; i++) {
+  //       newPopulation.push([...this.population[i]]);
+  //     }
+
+  //     while (newPopulation.length < this.populationSize) {
+  //       const parent1 = this.select();
+  //       const parent2 = this.select();
+  //       let child = this.crossover(parent1, parent2);
+  //       this.mutate(child);
+  //       newPopulation.push(child);
+  //     }
+
+  //     this.population = newPopulation;
+  //   }
+
+  //   return [...this.population[0]];
+  // }
+
   run(intermediatePoints: number[]): number[] {
     this.population = Array.from({ length: this.populationSize }, () =>
       this.createIndividual(intermediatePoints)
@@ -97,12 +177,16 @@ export class GeneticAlgorithm {
         const parent2 = this.select();
         let child = this.crossover(parent1, parent2);
         this.mutate(child);
-        newPopulation.push(child);
+
+        if (this.isValidRoute(child)) {
+          newPopulation.push(child);
+        }
       }
 
       this.population = newPopulation;
     }
 
+    this.population.sort((a, b) => this.evaluate(a) - this.evaluate(b));
     return [...this.population[0]];
   }
 }

@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { AntColonyOptimization } from "./algorithms/AntColonyOptimization";
 import { GeneticAlgorithm } from "./algorithms/GeneticAlgorithm";
 import { createDistanceMatrix } from "./algorithms/KhoangCach";
+import { RouteConstraints } from "./controllers/OptimizationController";
 import DiaDiemModel from "./models/DiaDiem";
 import router from "./routes/Routes";
 dotenv.config();
@@ -49,11 +50,24 @@ mongoose
       const startIdx = 0;
       const endIdx = locations.length - 1;
 
+      const isSameProvince =
+        locations[startIdx].province === locations[endIdx].province;
+      const isSameDistrict =
+        isSameProvince &&
+        locations[startIdx].district === locations[endIdx].district;
+
+      const constraints: RouteConstraints = {
+        maxStops: isSameDistrict ? 2 : isSameProvince ? 3 : 5,
+        maxTransitHubs: isSameProvince ? 0 : 1,
+        maxSameDistrictStops: isSameDistrict ? 0 : 1,
+      };
+
       const ga = new GeneticAlgorithm(
         locations,
         distanceMatrix,
         startIdx,
-        endIdx
+        endIdx,
+        constraints
       );
 
       const intermediatePoints = locations
@@ -66,7 +80,8 @@ mongoose
         locations,
         distanceMatrix,
         startIdx,
-        endIdx
+        endIdx,
+        constraints
       );
 
       const optimizedRoute = aco.run(gaRoute);

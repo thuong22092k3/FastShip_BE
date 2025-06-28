@@ -50,7 +50,7 @@ router.get("/statistics", statisticsController.statistic);
 //Algorithms
 router.post("/optimize/route", optimizationController.optimizeRoute);
 router.get("/optimize/delivery_route", optimizationController.getDeliveryRoute);
-router.get("/optimize/demo", optimizationController.demoAlgorithms);
+// router.get("/optimize/demo", optimizationController.demoAlgorithms);
 
 // Location=
 router.post("/location/create", locationController.createLocation);
