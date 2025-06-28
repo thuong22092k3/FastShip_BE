@@ -79,25 +79,21 @@ export const authController = {
         CongViec,
       } = req.body;
 
-      // Validate required fields
       if (!UserName || !Password || !HoTen) {
         res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin" });
         return;
       }
 
-      // Validate password length
       if (Password.length < 8) {
         res.status(400).json({ message: "Mật khẩu phải có ít nhất 8 ký tự" });
         return;
       }
 
-      // Validate email format if provided
       if (Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(Email)) {
         res.status(400).json({ message: "Email không hợp lệ" });
         return;
       }
 
-      // Check for existing user
       const existingUser =
         (await Admin.findOne({ UserName }).exec()) ||
         (await KhachHang.findOne({ UserName }).exec()) ||
@@ -109,7 +105,6 @@ export const authController = {
         return;
       }
 
-      // Validate efficiency range
       if (HieuSuat && (HieuSuat < 0 || HieuSuat > 100)) {
         res.status(400).json({ message: "Hiệu suất phải từ 0 đến 100" });
         return;

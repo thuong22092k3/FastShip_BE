@@ -43,7 +43,7 @@ function haversineDistance(
   coord1: [number, number],
   coord2: [number, number]
 ): number {
-  const R = 6371; // Earth radius in km
+  const R = 6371;
   const [lat1, lon1] = coord1;
   const [lat2, lon2] = coord2;
 

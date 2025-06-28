@@ -124,7 +124,6 @@ export const vehicleController = {
       res.status(500).json({ message: "Lỗi xóa phương tiện: Lỗi hệ thống!" });
     }
   },
-  //Lấy danh sách phương tiện
   getAllVehicle: async (req: Request, res: Response): Promise<void> => {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -205,7 +204,6 @@ export const vehicleController = {
     });
   },
 
-  //Tạo phiếu bảo dưỡng
   createBaoDuong: async (req: Request, res: Response): Promise<void> => {
     try {
       const { BaoDuongId, PhuongTienId, Ngay, TrangThai, ChiPhi } = req.body;
@@ -246,7 +244,6 @@ export const vehicleController = {
     }
   },
 
-  // Cập nhật phiếu bảo dưỡng
   updateBaoDuong: async (req: Request, res: Response): Promise<void> => {
     try {
       const { BaoDuongId, ...body } = req.body;
@@ -272,7 +269,6 @@ export const vehicleController = {
     }
   },
 
-  // Lấy danh sách phiếu bảo dưỡng
   getAllBaoDuong: async (req: Request, res: Response): Promise<void> => {
     try {
       const page = parseInt(req.query.page as string) || 1;
@@ -296,7 +292,6 @@ export const vehicleController = {
     }
   },
 
-  // Xóa phiếu bảo dưỡng
   deleteBaoDuong: async (req: Request, res: Response): Promise<void> => {
     try {
       const { BaoDuongId } = req.query;
