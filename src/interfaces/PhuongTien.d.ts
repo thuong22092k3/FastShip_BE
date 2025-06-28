@@ -1,7 +1,7 @@
 export interface IPhuongTien {
   PhuongTienId: string;
   HangXe: string;
-  TaiXeId: string;
+  TaiXeID: string;
   BienSo: string;
   LoaiXe: string;
   SucChua: number;

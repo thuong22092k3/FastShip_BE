@@ -320,9 +320,9 @@ export const orderController = {
   },
   assignDriver: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { donHangId, taiXeId } = req.body;
+      const { donHangId, TaiXeID } = req.body;
 
-      if (!donHangId || !taiXeId) {
+      if (!donHangId || !TaiXeID) {
         res
           .status(400)
           .json({ message: "Vui lòng cung cấp DonHangId và TaiXeID!" });
@@ -336,7 +336,7 @@ export const orderController = {
         return;
       }
 
-      order.TaiXeID = taiXeId;
+      order.TaiXeID = TaiXeID;
       order.UpdatedAt = new Date().toISOString();
       await order.save();
 

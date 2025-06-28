@@ -11,7 +11,7 @@ const PhuongTienSchema = new Schema<IPhuongTien>({
     type: String,
     required: true,
   },
-  TaiXeId: {
+  TaiXeID: {
     type: "String",
     required: false,
   },

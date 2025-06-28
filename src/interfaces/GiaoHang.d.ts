@@ -1,7 +1,7 @@
 export interface IGiaoHang {
   GiaoHangId: string;
   DonHangId: string;
-  TaiXeId: string;
+  TaiXeID: string;
   PhuongTienId: string;
   PhuongThuc: string;
   TrangThai: string;

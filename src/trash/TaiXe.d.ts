@@ -1,5 +1,5 @@
 export interface ITaiXe {
-  TaiXeId: string;
+  TaiXeID: string;
   UserName: string;
   Password: string;
   HoTen: string;

@@ -10,7 +10,7 @@ const GiaoHangSchema = new Schema<IGiaoHang>({
     type: "String",
     required: true,
   },
-  TaiXeId: {
+  TaiXeID: {
     type: "String",
     required: true,
   },

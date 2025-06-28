@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
-import { IPhuongTien } from "../interfaces/PhuongTien";
-import PhuongTien from "../models/PhuongTien";
-import BaoDuong from "../models/BaoDuong";
-import PhuongTienModel from "../models/PhuongTien";
-import BaoDuongModel from "../models/BaoDuong";
+import {
+  default as BaoDuong,
+  default as BaoDuongModel,
+} from "../models/BaoDuong";
+import {
+  default as PhuongTien,
+  default as PhuongTienModel,
+} from "../models/PhuongTien";
 
 export const vehicleController = {
   //Thêm phương tiện
@@ -12,7 +15,7 @@ export const vehicleController = {
       const {
         PhuongTienId,
         HangXe,
-        TaiXeId,
+        TaiXeID,
         BienSo,
         LoaiXe,
         SucChua,
@@ -23,7 +26,7 @@ export const vehicleController = {
       if (
         !PhuongTienId ||
         !HangXe ||
-        !TaiXeId ||
+        !TaiXeID ||
         !BienSo ||
         !LoaiXe ||
         !SucChua ||
@@ -47,7 +50,7 @@ export const vehicleController = {
       const newVehicle = new PhuongTien({
         PhuongTienId: `PT_${Date.now()}`,
         HangXe,
-        TaiXeId,
+        TaiXeID,
         BienSo,
         LoaiXe,
         SucChua,
