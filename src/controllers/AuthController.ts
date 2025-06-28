@@ -128,7 +128,7 @@ export const authController = {
           newUser = new Admin({
             AdminID: `AD_${Date.now()}`,
             UserName,
-            Password: hashedPassword,
+            Password,
             HoTen,
             Email,
             role,
@@ -138,7 +138,7 @@ export const authController = {
           newUser = new KhachHang({
             KhachHangID: `KH_${Date.now()}`,
             UserName,
-            Password: hashedPassword,
+            Password,
             HoTen,
             SDT,
             role,
@@ -148,7 +148,7 @@ export const authController = {
           newUser = new NhanVien({
             NhanVienID: `NV_${Date.now()}`,
             UserName,
-            Password: hashedPassword,
+            Password,
             HoTen,
             Email,
             HieuSuat,
@@ -159,7 +159,7 @@ export const authController = {
           newUser = new TaiXe({
             TaiXeID: `TX_${Date.now()}`,
             UserName,
-            Password: hashedPassword,
+            Password,
             HoTen,
             Email,
             HieuSuat,
