@@ -179,25 +179,30 @@ export const orderController = {
   },
   getOrder: async (req: Request, res: Response): Promise<void> => {
     try {
+      // Giả sử user được truyền qua query params hoặc body
+      const user = req.query.user || req.body.user;
+
+      if (!user || !user.role || !user.id) {
+        res.status(401).json({ message: "Thiếu thông tin người dùng" });
+        return;
+      }
+
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const skip = (page - 1) * limit;
-      // const { id } = req.query;
-      const user = (req as any).user;
+
       let query = {};
       if (user.role === "NhanVien") {
         query = { NhanVienID: user.id };
       } else if (user.role === "TaiXe") {
         query = { TaiXeID: user.id };
       }
-      // const [orders, total] = await Promise.all([
-      //   DonHangModel.find().skip(skip).limit(limit),
-      //   DonHangModel.countDocuments(),
-      // ]);
+
       const [orders, total] = await Promise.all([
         DonHangModel.find(query).skip(skip).limit(limit),
         DonHangModel.countDocuments(query),
       ]);
+
       res.status(200).json({
         success: true,
         data: orders,
@@ -205,19 +210,6 @@ export const orderController = {
         page,
         totalPages: Math.ceil(total / limit),
       });
-      // if (id) {
-      //   const order = await DonHang.find();
-
-      //   if (!order) {
-      //     res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
-      //     return;
-      //   }
-
-      //   res.status(200).json({ order });
-      // } else {
-      //   const orders = await DonHang.find();
-      //   res.status(200).json({ orders });
-      // }
     } catch (err) {
       console.error("Lỗi lấy đơn hàng:", err);
       res.status(500).json({ message: "Lỗi hệ thống" });
