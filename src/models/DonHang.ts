@@ -75,6 +75,10 @@ const DonHangSchema = new Schema<IDonHang>({
     required: false,
     default: "parcel",
   },
+  TaiXeId: {
+    type: "String",
+    required: false,
+  },
 });
 
 const DonHangModel = model<IDonHang>("DonHang", DonHangSchema);

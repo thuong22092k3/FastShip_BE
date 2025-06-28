@@ -183,9 +183,20 @@ export const orderController = {
       const limit = parseInt(req.query.limit as string) || 10;
       const skip = (page - 1) * limit;
       // const { id } = req.query;
+      const user = (req as any).user;
+      let query = {};
+      if (user.role === "NhanVien") {
+        query = { NhanVienId: user.id };
+      } else if (user.role === "TaiXe") {
+        query = { TaiXeId: user.id };
+      }
+      // const [orders, total] = await Promise.all([
+      //   DonHangModel.find().skip(skip).limit(limit),
+      //   DonHangModel.countDocuments(),
+      // ]);
       const [orders, total] = await Promise.all([
-        DonHangModel.find().skip(skip).limit(limit),
-        DonHangModel.countDocuments(),
+        DonHangModel.find(query).skip(skip).limit(limit),
+        DonHangModel.countDocuments(query),
       ]);
       res.status(200).json({
         success: true,
@@ -212,6 +223,7 @@ export const orderController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
+
   getOrderDetail: async (req: Request, res: Response): Promise<void> => {
     try {
       console.log("URL được gọi:", req.originalUrl);

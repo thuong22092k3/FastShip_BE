@@ -22,4 +22,5 @@ export interface IDonHang {
     weight: number;
   };
   packageType?: "document" | "parcel" | "heavy_parcel" | "fragile";
+  TaiXeId?: string;
 }
