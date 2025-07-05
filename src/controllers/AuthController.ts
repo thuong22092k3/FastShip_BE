@@ -361,22 +361,23 @@ export const authController = {
       let allUsers: IUser[] = [];
 
       if (role) {
-        const config = modelMap[role as string];
-        if (!config) {
+        const model = modelMap[role as string];
+        if (!model) {
           res.status(400).json({ message: "Role không hợp lệ!" });
           return;
         }
 
-        let query = config.model.find();
-        if (config.populate) {
+        let query = model.find();
+        if (role === "NhanVien" || role === "TaiXe") {
           query = query.populate("DiaDiemId", "name address district province");
         }
+
         const users = await query.exec();
         allUsers = users.map((u: any) => ({ ...u.toObject(), role }));
       } else {
-        for (const [roleName, config] of Object.entries(modelMap)) {
-          let query = config.model.find();
-          if (config.populate) {
+        for (const [roleName, model] of Object.entries(modelMap)) {
+          let query = model.find();
+          if (roleName === "NhanVien" || roleName === "TaiXe") {
             query = query.populate(
               "DiaDiemId",
               "name address district province"
