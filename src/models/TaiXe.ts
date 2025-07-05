@@ -10,6 +10,7 @@ const TaiXeSchema = new Schema<IUser>({
   HieuSuat: { type: Number, required: true },
   CongViec: { type: Number, required: true },
   role: { type: String, default: "TaiXe" },
+  DiaDiemId: { type: String, required: true },
 });
 
 const TaiXeModel = model<IUser>("TaiXe", TaiXeSchema);

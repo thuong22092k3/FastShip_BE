@@ -9,6 +9,7 @@ const NhanVienSchema = new Schema<IUser>({
   Email: { type: String, required: true },
   HieuSuat: { type: Number, required: true },
   role: { type: String, default: "NhanVien" },
+  DiaDiemId: { type: String, required: false },
 });
 
 const NhanVienModel = model<IUser>("NhanVien", NhanVienSchema);

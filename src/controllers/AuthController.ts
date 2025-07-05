@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { IUser } from "../interfaces/User";
 import Admin from "../models/Admin";
+import DiaDiemModel from "../models/DiaDiem";
 import KhachHang from "../models/KhachHang";
 import NhanVien from "../models/NhanVien";
 import TaiXe from "../models/TaiXe";
@@ -86,6 +87,7 @@ export const authController = {
         SDT,
         HieuSuat,
         CongViec,
+        DiaDiemId,
       } = req.body;
 
       if (!UserName || !Password || !HoTen) {
@@ -101,6 +103,19 @@ export const authController = {
       if (Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(Email)) {
         res.status(400).json({ message: "Email không hợp lệ" });
         return;
+      }
+
+      if (role === "NhanVien" || role === "TaiXe") {
+        if (!DiaDiemId) {
+          res.status(400).json({ message: "Vui lòng chọn bưu cục làm việc" });
+          return;
+        }
+
+        const diaDiem = await DiaDiemModel.findOne({ DiaDiemId }).exec();
+        if (!diaDiem) {
+          res.status(400).json({ message: "Bưu cục không tồn tại" });
+          return;
+        }
       }
 
       const existingUser =
@@ -153,6 +168,7 @@ export const authController = {
             Email,
             HieuSuat,
             role,
+            DiaDiemId,
           });
           break;
         case "TaiXe":
@@ -165,6 +181,7 @@ export const authController = {
             HieuSuat,
             CongViec,
             role,
+            DiaDiemId,
           });
           break;
         default:
@@ -184,12 +201,28 @@ export const authController = {
   // Cập nhật tài khoản
   updateUser: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { UserName, Password, HoTen, Email, SDT, HieuSuat, CongViec } =
-        req.body;
+      const {
+        UserName,
+        Password,
+        HoTen,
+        Email,
+        SDT,
+        HieuSuat,
+        CongViec,
+        DiaDiemId,
+      } = req.body;
 
       if (!UserName) {
         res.status(400).json({ message: "Vui lòng cung cấp tên đăng nhập!" });
         return;
+      }
+
+      if (DiaDiemId) {
+        const diaDiem = await DiaDiemModel.findOne({ DiaDiemId }).exec();
+        if (!diaDiem) {
+          res.status(400).json({ message: "Bưu cục không tồn tại" });
+          return;
+        }
       }
 
       const userTypes = [
@@ -253,10 +286,20 @@ export const authController = {
       for (const userType of userTypes) {
         const user = await userType.model.findOne({ UserName }).exec();
         if (user) {
+          let diaDiemInfo = null;
+          if (user.DiaDiemId) {
+            diaDiemInfo = await DiaDiemModel.findOne({
+              DiaDiemId: user.DiaDiemId,
+            })
+              .select("name address")
+              .exec();
+          }
+
           res.status(200).json({
             user: {
               ...user.toObject(),
               role: userType.role,
+              diaDiemInfo,
             },
           });
           return;
@@ -318,17 +361,28 @@ export const authController = {
       let allUsers: IUser[] = [];
 
       if (role) {
-        const selectedModel = modelMap[role as string];
-        if (!selectedModel) {
+        const config = modelMap[role as string];
+        if (!config) {
           res.status(400).json({ message: "Role không hợp lệ!" });
           return;
         }
 
-        const users = await selectedModel.find().exec();
+        let query = config.model.find();
+        if (config.populate) {
+          query = query.populate("DiaDiemId", "name address district province");
+        }
+        const users = await query.exec();
         allUsers = users.map((u: any) => ({ ...u.toObject(), role }));
       } else {
-        for (const [roleName, model] of Object.entries(modelMap)) {
-          const users = await model.find().exec();
+        for (const [roleName, config] of Object.entries(modelMap)) {
+          let query = config.model.find();
+          if (config.populate) {
+            query = query.populate(
+              "DiaDiemId",
+              "name address district province"
+            );
+          }
+          const users = await query.exec();
           allUsers.push(
             ...users.map((u: any) => ({ ...u.toObject(), role: roleName }))
           );

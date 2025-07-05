@@ -13,4 +13,5 @@ export interface IUser extends Document {
   KhachHangID?: string;
   NhanVienID?: string;
   TaiXeID?: string;
+  DiaDiemId?: string;
 }
