@@ -268,4 +268,177 @@ export const statisticsController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
+  filterOrders: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { fromDate, toDate, TrangThai, DiaChiGiaoHang, NhanVienID } =
+        req.query;
+
+      const query: any = {};
+
+      if (fromDate && toDate) {
+        query.CreatedAt = {
+          $gte: new Date(fromDate as string),
+          $lte: new Date(toDate as string),
+        };
+      }
+
+      if (TrangThai) {
+        query.TrangThai = TrangThai;
+      }
+
+      if (DiaChiGiaoHang) {
+        query.DiaChiGiaoHang = DiaChiGiaoHang;
+      }
+
+      if (NhanVienID) {
+        query.NhanVienID = NhanVienID;
+      }
+
+      const orders = await DonHang.find(query).lean();
+
+      res.status(200).json({
+        message: "Filter orders successfully!",
+        data: orders,
+      });
+    } catch (err) {
+      console.error("Error filtering orders:", err);
+      res.status(500).json({ message: "System error" });
+    }
+  },
+
+  getMonthlyStats: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const today = new Date();
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(today.getMonth() - 5);
+      sixMonthsAgo.setDate(1);
+
+      const stats = await DonHang.aggregate([
+        {
+          $match: {
+            CreatedAt: {
+              $gte: sixMonthsAgo,
+              $lte: today,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$CreatedAt" },
+              month: { $month: "$CreatedAt" },
+            },
+            count: { $sum: 1 },
+            completed: {
+              $sum: {
+                $cond: [{ $eq: ["$TrangThai", "Hoàn thành"] }, 1, 0],
+              },
+            },
+          },
+        },
+        {
+          $sort: { "_id.year": 1, "_id.month": 1 },
+        },
+        {
+          $project: {
+            month: {
+              $dateToString: {
+                format: "%Y-%m",
+                date: {
+                  $dateFromParts: {
+                    year: "$_id.year",
+                    month: "$_id.month",
+                  },
+                },
+              },
+            },
+            count: 1,
+            completed: 1,
+            _id: 0,
+          },
+        },
+      ]);
+
+      res.status(200).json({
+        message: "Monthly stats fetched successfully!",
+        data: stats,
+      });
+    } catch (err) {
+      console.error("Error fetching monthly stats:", err);
+      res.status(500).json({ message: "System error" });
+    }
+  },
+
+  getStatusStats: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const stats = await DonHang.aggregate([
+        {
+          $group: {
+            _id: "$TrangThai",
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            status: "$_id",
+            count: 1,
+            _id: 0,
+          },
+        },
+      ]);
+
+      res.status(200).json({
+        message: "Status stats fetched successfully!",
+        data: stats,
+      });
+    } catch (err) {
+      console.error("Error fetching status stats:", err);
+      res.status(500).json({ message: "System error" });
+    }
+  },
+
+  getTopStaff: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 5;
+
+      const stats = await DonHang.aggregate([
+        {
+          $group: {
+            _id: "$NhanVienID",
+            count: { $sum: 1 },
+            completed: {
+              $sum: {
+                $cond: [{ $eq: ["$TrangThai", "Hoàn thành"] }, 1, 0],
+              },
+            },
+          },
+        },
+        {
+          $sort: { count: -1 },
+        },
+        {
+          $limit: limit,
+        },
+        {
+          $project: {
+            staffId: "$_id",
+            totalOrders: "$count",
+            completedOrders: "$completed",
+            completionRate: {
+              $multiply: [{ $divide: ["$completed", "$count"] }, 100],
+            },
+            _id: 0,
+          },
+        },
+      ]);
+
+      res.status(200).json({
+        message: "Top staff fetched successfully!",
+        data: stats,
+      });
+    } catch (err) {
+      console.error("Error fetching top staff:", err);
+      res.status(500).json({ message: "System error" });
+    }
+  },
 };
