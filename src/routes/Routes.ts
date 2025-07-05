@@ -46,7 +46,14 @@ router.get("/order/search", orderController.searchOrders);
 router.post("/order/assignDriver", orderController.assignDriver);
 
 //Statistics
+// router.get("/statistics", statisticsController.statistic);
 router.get("/statistics", statisticsController.statistic);
+router.get("/statistics/overview", statisticsController.getOverview);
+router.get("/statistics/locations", statisticsController.getLocationStats);
+router.get(
+  "/statistics/staff-performance",
+  statisticsController.getStaffPerformance
+);
 
 //Algorithms
 router.post("/optimize/route", optimizationController.optimizeRoute);
