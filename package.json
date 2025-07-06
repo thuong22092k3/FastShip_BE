@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --max-old-space-size=4096 ./node_modules/ts-node/dist/bin.js src/app.ts",
-    "start": "node --max-old-space-size=4096 dist/app.js",
+    "dev": "node --max-old-space-size=1024 ./node_modules/ts-node/dist/bin.js src/app.ts",
+    "start": "node --max-old-space-size=1024 dist/app.js",
     "build": "tsc"
   },
   "keywords": [],

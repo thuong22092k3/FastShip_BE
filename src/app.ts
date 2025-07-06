@@ -24,13 +24,15 @@ app.use(
 app.use(express.json());
 app.use("/api", router);
 
+const PORT = process.env.PORT || 5000;
+
 mongoose
   .connect(
     "mongodb+srv://admin:admin@fastship.l23v2.mongodb.net/FastShip?retryWrites=true&w=majority&appName=FastShip"
   )
   .then(async () => {
-    app.listen(5000, () => {
-      console.log("server running on port" + 5000);
+    app.listen(PORT, () => {
+      console.log("server running on PORT" + PORT);
     });
     try {
       const locations = await DiaDiemModel.find().lean();
