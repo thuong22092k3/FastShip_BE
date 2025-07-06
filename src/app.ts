@@ -135,7 +135,7 @@ mongoose
       "mongodb+srv://admin:admin@fastship.l23v2.mongodb.net/FastShip?retryWrites=true&w=majority&appName=FastShip"
   )
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(5000, () => {
       console.log(`✅ Server is running on PORT ${PORT}`);
     });
   })
