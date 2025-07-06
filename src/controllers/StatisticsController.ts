@@ -138,7 +138,7 @@ export const statisticsController = {
             count: { $sum: 1 },
             completed: {
               $sum: {
-                $cond: [{ $eq: ["$TrangThai", "Hoàn thành"] }, 1, 0],
+                $cond: [{ $eq: ["$TrangThai", "Đã giao"] }, 1, 0],
               },
             },
           },
@@ -226,7 +226,7 @@ export const statisticsController = {
             totalOrders: { $sum: 1 },
             completedOrders: {
               $sum: {
-                $cond: [{ $eq: ["$TrangThai", "Hoàn thành"] }, 1, 0],
+                $cond: [{ $eq: ["$TrangThai", "Đã giao"] }, 1, 0],
               },
             },
             avgProcessingTime: {
@@ -309,59 +309,73 @@ export const statisticsController = {
   getMonthlyStats: async (req: Request, res: Response): Promise<void> => {
     try {
       const today = new Date();
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(today.getMonth() - 5);
-      sixMonthsAgo.setDate(1);
+      const endOfDay = new Date(today);
+      endOfDay.setHours(23, 59, 59, 999);
 
-      const stats = await DonHang.aggregate([
-        {
-          $match: {
-            CreatedAt: {
-              $gte: sixMonthsAgo,
-              $lte: today,
-            },
-          },
+      const sixMonthsAgo = new Date(today);
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+      sixMonthsAgo.setDate(1);
+      sixMonthsAgo.setHours(0, 0, 0, 0);
+
+      // Debug: Log khoảng thời gian query
+      console.log("Query range:", {
+        start: sixMonthsAgo,
+        end: endOfDay,
+      });
+
+      // Lấy dữ liệu từ database
+      const orders = await DonHang.find({
+        CreatedAt: {
+          $gte: sixMonthsAgo,
+          $lte: endOfDay,
         },
-        {
-          $group: {
-            _id: {
-              year: { $year: "$CreatedAt" },
-              month: { $month: "$CreatedAt" },
-            },
-            count: { $sum: 1 },
-            completed: {
-              $sum: {
-                $cond: [{ $eq: ["$TrangThai", "Hoàn thành"] }, 1, 0],
-              },
-            },
-          },
-        },
-        {
-          $sort: { "_id.year": 1, "_id.month": 1 },
-        },
-        {
-          $project: {
-            month: {
-              $dateToString: {
-                format: "%Y-%m",
-                date: {
-                  $dateFromParts: {
-                    year: "$_id.year",
-                    month: "$_id.month",
-                  },
-                },
-              },
-            },
-            count: 1,
-            completed: 1,
-            _id: 0,
-          },
-        },
-      ]);
+      }).lean();
+
+      // Debug: Log số lượng đơn hàng tìm thấy
+      console.log(`Found ${orders.length} orders in date range`);
+
+      // Tạo object để nhóm dữ liệu theo tháng
+      const monthlyData: Record<string, { count: number; completed: number }> =
+        {};
+
+      orders.forEach((order) => {
+        const orderDate = new Date(order.CreatedAt);
+        const monthKey = `${orderDate.getFullYear()}-${String(
+          orderDate.getMonth() + 1
+        ).padStart(2, "0")}`;
+
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = { count: 0, completed: 0 };
+        }
+
+        monthlyData[monthKey].count++;
+        if (order.TrangThai === "Đã giao") {
+          monthlyData[monthKey].completed++;
+        }
+      });
+
+      // Tạo mảng kết quả cho 6 tháng gần nhất
+      const result = [];
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(today);
+        date.setMonth(date.getMonth() - i);
+        const monthKey = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}`;
+
+        result.push({
+          month: monthKey,
+          count: monthlyData[monthKey]?.count || 0,
+          completed: monthlyData[monthKey]?.completed || 0,
+        });
+      }
+
+      // Debug: Log kết quả cuối cùng
+      console.log("Monthly stats result:", result);
 
       res.status(200).json({
         message: "Monthly stats fetched successfully!",
-        data: stats,
+        data: result,
       });
     } catch (err) {
       console.error("Error fetching monthly stats:", err);
@@ -408,7 +422,7 @@ export const statisticsController = {
             count: { $sum: 1 },
             completed: {
               $sum: {
-                $cond: [{ $eq: ["$TrangThai", "Hoàn thành"] }, 1, 0],
+                $cond: [{ $eq: ["$TrangThai", "Đã giao"] }, 1, 0],
               },
             },
           },

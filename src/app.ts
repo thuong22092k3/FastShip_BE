@@ -117,7 +117,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://fastship-be.onrender.com"],
+    origin: ["http://localhost:3000", "https://fastship-be-1.onrender.com"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

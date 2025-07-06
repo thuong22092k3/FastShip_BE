@@ -54,10 +54,10 @@ router.get(
   "/statistics/staff-performance",
   statisticsController.getStaffPerformance
 );
-router.get("/filter", statisticsController.filterOrders);
-router.get("/monthly", statisticsController.getMonthlyStats);
-router.get("/status", statisticsController.getStatusStats);
-router.get("/top-staff", statisticsController.getTopStaff);
+router.get("/statistics/filter", statisticsController.filterOrders);
+router.get("/statistics/monthly", statisticsController.getMonthlyStats);
+router.get("/statistics/status", statisticsController.getStatusStats);
+router.get("/statistics/top-staff", statisticsController.getTopStaff);
 
 //Algorithms
 router.post("/optimize/route", optimizationController.optimizeRoute);
