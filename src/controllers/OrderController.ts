@@ -88,18 +88,20 @@ export const orderController = {
   updateStatusOrder: async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.query;
-      const { TrangThai } = req.body;
+      const { TrangThai, currentStatus } = req.body;
 
-      const orderExists = await DonHang.findOne({ DonHangId: id });
-      console.log("Debug - Đơn hàng tìm thấy:", orderExists);
+      const validTransitions: Record<string, string[]> = {
+        "Chờ xác nhận": ["Đang giao", "Hủy"],
+        "Đang giao": ["Đã giao"],
+      };
 
-      if (!id) {
-        res.status(400).json({ message: "Vui lòng cung cấp ID đơn hàng!" });
-        return;
-      }
-
-      if (!TrangThai) {
-        res.status(400).json({ message: "Vui lòng cung cấp trạng thái mới!" });
+      if (
+        validTransitions[currentStatus] &&
+        !validTransitions[currentStatus].includes(TrangThai)
+      ) {
+        res.status(400).json({
+          message: `Không thể chuyển từ ${currentStatus} sang ${TrangThai}`,
+        });
         return;
       }
 
@@ -123,6 +125,7 @@ export const orderController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
+
   deleteOrder: async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.query;
@@ -346,6 +349,45 @@ export const orderController = {
       });
     } catch (err) {
       console.error("Lỗi giao đơn hàng:", err);
+      res.status(500).json({ message: "Lỗi hệ thống" });
+    }
+  },
+  getOrderStats: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const role = req.query.role as string;
+      const id = req.query.id as string;
+
+      if (!role || !id) {
+        res.status(401).json({ message: "Thiếu thông tin người dùng" });
+        return;
+      }
+
+      let query = {};
+      if (role === "NhanVien") {
+        query = { NhanVienID: id };
+      } else if (role === "TaiXe") {
+        query = { TaiXeID: id };
+      }
+
+      const [total, active, completed] = await Promise.all([
+        DonHangModel.countDocuments(query),
+        DonHangModel.countDocuments({
+          ...query,
+          TrangThai: { $ne: "Đã giao" },
+        }),
+        DonHangModel.countDocuments({ ...query, TrangThai: "Đã giao" }),
+      ]);
+
+      res.status(200).json({
+        success: true,
+        stats: {
+          total,
+          active,
+          completed,
+        },
+      });
+    } catch (err) {
+      console.error("Lỗi lấy thống kê đơn hàng:", err);
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },

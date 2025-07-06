@@ -68,6 +68,10 @@ export const authController = {
           UserName: user.UserName,
           HoTen: user.HoTen,
           role: userRole,
+          DiaDiemId:
+            userRole === "NhanVien" || userRole === "TaiXe"
+              ? (user as any).DiaDiemId
+              : undefined,
         },
       });
     } catch (err) {

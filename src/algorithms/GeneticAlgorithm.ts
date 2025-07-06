@@ -3,19 +3,6 @@ import { IDiaDiem } from "../interfaces/DiaDiem";
 
 export class GeneticAlgorithm {
   private population: number[][];
-  // constructor(
-  //   private locations: IDiaDiem[],
-  //   private distanceMatrix: number[][],
-  //   private startIdx: number,
-  //   private endIdx: number,
-  //   private populationSize: number = 50,
-  //   private mutationRate: number = 0.1,
-  //   private generations: number = 100,
-  //   private elitismCount: number = 2,
-  //   private constraints: RouteConstraints
-  // ) {
-  //   this.population = [];
-  // }
 
   constructor(
     private locations: IDiaDiem[],
@@ -129,34 +116,6 @@ export class GeneticAlgorithm {
       [route[i], route[j]] = [route[j], route[i]];
     }
   }
-
-  // run(intermediatePoints: number[]): number[] {
-  //   this.population = Array.from({ length: this.populationSize }, () =>
-  //     this.createIndividual(intermediatePoints)
-  //   );
-
-  //   for (let gen = 0; gen < this.generations; gen++) {
-  //     this.population.sort((a, b) => this.evaluate(a) - this.evaluate(b));
-
-  //     const newPopulation: number[][] = [];
-
-  //     for (let i = 0; i < this.elitismCount; i++) {
-  //       newPopulation.push([...this.population[i]]);
-  //     }
-
-  //     while (newPopulation.length < this.populationSize) {
-  //       const parent1 = this.select();
-  //       const parent2 = this.select();
-  //       let child = this.crossover(parent1, parent2);
-  //       this.mutate(child);
-  //       newPopulation.push(child);
-  //     }
-
-  //     this.population = newPopulation;
-  //   }
-
-  //   return [...this.population[0]];
-  // }
 
   run(intermediatePoints: number[]): number[] {
     this.population = Array.from({ length: this.populationSize }, () =>

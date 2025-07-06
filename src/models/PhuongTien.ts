@@ -41,6 +41,7 @@ const PhuongTienSchema = new Schema<IPhuongTien>({
     type: "String",
     required: false,
   },
+  DiaDiemId: { type: String, required: false },
 });
 
 const PhuongTienModel = model<IPhuongTien>("PhuongTien", PhuongTienSchema);

@@ -31,7 +31,7 @@ function getRouteConstraints(
     };
   }
   return {
-    maxStops: 5,
+    maxStops: 6,
     maxTransitHubs: 1,
     maxSameDistrictStops: 1,
   };
@@ -76,126 +76,6 @@ function calculateEstimatedTime(distance: number): string {
 }
 
 export const optimizationController = {
-  // optimizeRoute: asyncHandler(async (req: Request, res: Response) => {
-  //   try {
-  //     const { order } = req.body;
-
-  //     if (!order) {
-  //       res.status(400).json({
-  //         success: false,
-  //         message: "Thiếu thông tin đơn hàng",
-  //       });
-  //       return;
-  //     }
-
-  //     const dbLocations = (await DiaDiemModel.find().lean()) as IDiaDiem[];
-  //     if (!dbLocations || dbLocations.length === 0) {
-  //       res.status(404).json({
-  //         success: false,
-  //         message: "Không tìm thấy dữ liệu bưu cục",
-  //       });
-  //       return;
-  //     }
-
-  //     const startLocation = await findNearestLocation(order.DiaChiLayHang);
-  //     const endLocation = await findNearestLocation(order.DiaChiGiaoHang);
-
-  //     if (!startLocation || !endLocation) {
-  //       res.status(404).json({
-  //         success: false,
-  //         message: "Không tìm thấy bưu cục phù hợp với địa chỉ giao/nhận",
-  //       });
-  //       return;
-  //     }
-
-  //     const relevantLocations = dbLocations.filter(
-  //       (loc) =>
-  //         loc.province === startLocation.province &&
-  //         loc.province === endLocation.province
-  //     );
-
-  //     const isSameProvince = startLocation.province === endLocation.province;
-
-  //     const locationsToUse = isSameProvince
-  //       ? relevantLocations
-  //       : [
-  //           startLocation,
-  //           ...getTransitHubs(startLocation.province, endLocation.province),
-  //           endLocation,
-  //         ];
-
-  //     const distanceMatrix = createDistanceMatrix(locationsToUse);
-
-  //     const startIdx = locationsToUse.findIndex(
-  //       (loc) => loc.DiaDiemId === startLocation.DiaDiemId
-  //     );
-  //     const endIdx = locationsToUse.findIndex(
-  //       (loc) => loc.DiaDiemId === endLocation.DiaDiemId
-  //     );
-
-  //     const intermediatePoints = locationsToUse
-  //       .map((_, idx) => idx)
-  //       .filter((idx) => idx !== startIdx && idx !== endIdx);
-
-  //     const ga = new GeneticAlgorithm(
-  //       locationsToUse,
-  //       distanceMatrix,
-  //       startIdx,
-  //       endIdx
-  //     );
-  //     const gaRoute = ga.run(intermediatePoints);
-
-  //     const aco = new AntColonyOptimization(
-  //       locationsToUse,
-  //       distanceMatrix,
-  //       startIdx,
-  //       endIdx
-  //     );
-  //     const optimizedRoute = aco.run(gaRoute);
-
-  //     let totalDistance = 0;
-  //     const stops = optimizedRoute.map((index: number) => {
-  //       const location = locationsToUse[index];
-  //       return {
-  //         id: location.DiaDiemId,
-  //         name: location.name,
-  //         address: location.address,
-  //         coordinates: [location.longitude, location.latitude],
-  //       };
-  //     });
-
-  //     for (let i = 0; i < optimizedRoute.length - 1; i++) {
-  //       totalDistance +=
-  //         distanceMatrix[optimizedRoute[i]][optimizedRoute[i + 1]];
-  //     }
-
-  //     const polyline = optimizedRoute.map((index: number) => [
-  //       locationsToUse[index].longitude,
-  //       locationsToUse[index].latitude,
-  //     ]);
-
-  //     res.status(200).json({
-  //       success: true,
-  //       data: {
-  //         route: optimizedRoute,
-  //         stops,
-  //         totalDistance,
-  //         polyline,
-  //         estimatedTime: calculateEstimatedTime(totalDistance),
-  //         order,
-  //       },
-  //     });
-  //     return;
-  //   } catch (error) {
-  //     console.error("Lỗi khi tối ưu lộ trình:", error);
-  //     res.status(500).json({
-  //       success: false,
-  //       message: "Lỗi server khi tối ưu lộ trình",
-  //     });
-  //     return;
-  //   }
-  // }),
-
   optimizeRoute: asyncHandler(async (req: Request, res: Response) => {
     try {
       const { order } = req.body;
@@ -252,13 +132,15 @@ export const optimizationController = {
           startLocation.province,
           endLocation.province
         );
-        const startProvinceLocations = dbLocations
-          .filter((loc) => loc.province === startLocation.province)
-          .slice(0, 1);
+        const startProvinceLocations = dbLocations.filter(
+          (loc) => loc.province === startLocation.province
+        );
+        // .slice(0, 1);
 
-        const endProvinceLocations = dbLocations
-          .filter((loc) => loc.province === endLocation.province)
-          .slice(0, 1);
+        const endProvinceLocations = dbLocations.filter(
+          (loc) => loc.province === endLocation.province
+        );
+        // .slice(0, 1);
         relevantLocations = [
           ...transitHubs.slice(0, constraints.maxTransitHubs),
           ...startProvinceLocations,
@@ -295,7 +177,6 @@ export const optimizationController = {
         constraints
       );
       const gaRoute = ga.run(intermediatePoints);
-      // const gaDistance = calculateRouteDistance(gaRoute, distanceMatrix);
       let gaDistance = 0;
       for (let i = 0; i < gaRoute.length - 1; i++) {
         gaDistance += distanceMatrix[gaRoute[i]][gaRoute[i + 1]];
@@ -309,54 +190,19 @@ export const optimizationController = {
         constraints
       );
       const optimizedRoute = aco.run(gaRoute);
-      // const acoDistance = calculateRouteDistance(
-      //   optimizedRoute,
-      //   distanceMatrix
-      // );
+      const acoFromInitialRoute = aco.run(intermediatePoints);
+
+      let acoDistanceFromInitialRoute = 0;
+      for (let i = 0; i < acoFromInitialRoute.length - 1; i++) {
+        acoDistanceFromInitialRoute +=
+          distanceMatrix[acoFromInitialRoute[i]][acoFromInitialRoute[i + 1]];
+      }
+
       let acoDistance = 0;
       for (let i = 0; i < optimizedRoute.length - 1; i++) {
         acoDistance += distanceMatrix[optimizedRoute[i]][optimizedRoute[i + 1]];
       }
 
-      // const stops = optimizedRoute.map((index: number) => {
-      //   const location = locationsToUse[index];
-      //   return {
-      //     id: location.DiaDiemId,
-      //     name: location.name,
-      //     address: location.address,
-      //     coordinates: [location.longitude, location.latitude],
-      //     type:
-      //       index === startIdx
-      //         ? "pickup"
-      //         : index === endIdx
-      //         ? "delivery"
-      //         : "transit",
-      //   };
-      // });
-
-      // let totalDistance = 0;
-      // for (let i = 0; i < optimizedRoute.length - 1; i++) {
-      //   totalDistance +=
-      //     distanceMatrix[optimizedRoute[i]][optimizedRoute[i + 1]];
-      // }
-
-      // const polyline = optimizedRoute.map((index: number) => [
-      //   locationsToUse[index].longitude,
-      //   locationsToUse[index].latitude,
-      // ]);
-
-      // res.status(200).json({
-      //   success: true,
-      //   data: {
-      //     route: optimizedRoute,
-      //     stops,
-      //     totalDistance,
-      //     polyline,
-      //     estimatedTime: calculateEstimatedTime(totalDistance),
-      //     constraints,
-      //     order,
-      //   },
-      // });
       const formatStops = (route: number[]) => {
         return route.map((index: number) => {
           const location = locationsToUse[index];
@@ -394,11 +240,13 @@ export const optimizationController = {
               estimatedTime: calculateEstimatedTime(gaDistance),
             },
             aco: {
-              route: optimizedRoute,
-              stops: formatStops(optimizedRoute),
-              totalDistance: acoDistance,
-              polyline: formatPolyline(optimizedRoute),
-              estimatedTime: calculateEstimatedTime(acoDistance),
+              route: acoFromInitialRoute,
+              stops: formatStops(acoFromInitialRoute),
+              totalDistance: acoDistanceFromInitialRoute,
+              polyline: formatPolyline(acoFromInitialRoute),
+              estimatedTime: calculateEstimatedTime(
+                acoDistanceFromInitialRoute
+              ),
             },
             improvement: {
               distance: (gaDistance - acoDistance).toFixed(2),
@@ -505,132 +353,8 @@ export const optimizationController = {
       });
     }
   }),
-
-  // demoAlgorithms: asyncHandler(async (req: Request, res: Response) => {
-  //   try {
-  //     const demoLocations = locations;
-
-  //     if (!demoLocations || demoLocations.length === 0) {
-  //       res.status(404).json({
-  //         success: false,
-  //         message: "Không tìm thấy dữ liệu địa điểm",
-  //       });
-  //       return;
-  //     }
-
-  //     const distanceMatrix = createDistanceMatrix(demoLocations);
-
-  //     const initialRoute = Array.from(
-  //       { length: demoLocations.length },
-  //       (_, i) => i
-  //     );
-  //     const shuffledRoute = [...initialRoute].sort(() => Math.random() - 0.5);
-
-  //     const initialDistance = calculateRouteDistance(
-  //       shuffledRoute,
-  //       distanceMatrix
-  //     );
-
-  //     console.time("Genetic Algorithm");
-  //     const ga = new GeneticAlgorithm(
-  //       demoLocations,
-  //       distanceMatrix,
-  //       0,
-  //       demoLocations.length - 1
-  //     );
-  //     const gaRoute = ga.run(initialRoute.slice(1, -1));
-  //     const gaDistance = calculateRouteDistance(gaRoute, distanceMatrix);
-  //     console.timeEnd("Genetic Algorithm");
-
-  //     console.time("Ant Colony Optimization");
-  //     const aco = new AntColonyOptimization(
-  //       demoLocations,
-  //       distanceMatrix,
-  //       0,
-  //       demoLocations.length - 1
-  //     );
-  //     const acoRoute = aco.run(gaRoute);
-  //     const acoDistance = calculateRouteDistance(acoRoute, distanceMatrix);
-  //     console.timeEnd("Ant Colony Optimization");
-
-  //     const result = {
-  //       locations: demoLocations.map((loc) => ({
-  //         id: loc.DiaDiemId,
-  //         name: loc.name,
-  //         address: loc.address,
-  //         coordinates: [loc.longitude, loc.latitude],
-  //       })),
-  //       initialRoute: shuffledRoute,
-  //       initialDistance: initialDistance.toFixed(2) + " km",
-  //       gaRoute,
-  //       gaDistance: gaDistance.toFixed(2) + " km",
-  //       acoRoute,
-  //       acoDistance: acoDistance.toFixed(2) + " km",
-  //       improvement: (initialDistance - acoDistance).toFixed(2) + " km",
-  //       improvementPercentage:
-  //         (((initialDistance - acoDistance) / initialDistance) * 100).toFixed(
-  //           2
-  //         ) + "%",
-  //       polyline: acoRoute.map((index) => [
-  //         demoLocations[index].longitude,
-  //         demoLocations[index].latitude,
-  //       ]),
-  //       estimatedTime: calculateEstimatedTime(acoDistance),
-  //     };
-
-  //     res.status(200).json({
-  //       success: true,
-  //       data: result,
-  //     });
-  //   } catch (error) {
-  //     console.error("Lỗi khi demo giải thuật:", error);
-  //     res.status(500).json({
-  //       success: false,
-  //       message: "Lỗi server khi demo giải thuật",
-  //     });
-  //   }
-  // }),
 };
 
-// async function findNearestLocation(address: string): Promise<IDiaDiem | null> {
-//   return await DiaDiemModel.findOne({
-//     address: { $regex: new RegExp(address, "i") },
-//   }).lean();
-// }
-
-// async function findNearestLocation(address: string): Promise<IDiaDiem | null> {
-//   try {
-//     const districtMatch = address.match(/(Quận\s+\w+|Q\.\s*\d+)/i);
-//     const district = districtMatch ? districtMatch[0] : null;
-
-//     if (!district) {
-//       console.error(`Không thể xác định quận từ địa chỉ: ${address}`);
-//       return null;
-//     }
-
-//     const normalizedDistrict = district
-//       .replace(/Q\.\s*/i, "Quận ")
-//       .toLowerCase()
-//       .trim();
-
-//     const location = await DiaDiemModel.findOne({
-//       $or: [
-//         { district: { $regex: new RegExp(normalizedDistrict, "i") } },
-//         { address: { $regex: new RegExp(normalizedDistrict, "i") } },
-//       ],
-//     }).lean();
-
-//     if (!location) {
-//       console.error(`Không tìm thấy bưu cục cho quận: ${district}`);
-//       return null;
-//     }
-
-//     return location as IDiaDiem;
-//   } catch (error) {
-//     console.error("Lỗi khi tìm bưu cục gần nhất:", error);
-//     return null;
-//   }
-// }
 async function findNearestLocation(address: string): Promise<IDiaDiem | null> {
   try {
     if (!address || typeof address !== "string") {
@@ -679,6 +403,24 @@ async function findNearestLocation(address: string): Promise<IDiaDiem | null> {
         }
       }
 
+      if (!province) {
+        const knownProvinces = {
+          "hà nội": "Hà Nội",
+          "tp hcm": "TP.HCM",
+          "hồ chí minh": "TP.HCM",
+          "bình dương": "Bình Dương",
+          "đồng nai": "Đồng Nai",
+          "đà nẵng": "Đà Nẵng",
+        };
+
+        for (const [key, val] of Object.entries(knownProvinces)) {
+          if (addr.toLowerCase().includes(key)) {
+            province = val;
+            break;
+          }
+        }
+      }
+
       if (!district && !province) {
         const commonDistricts = [
           { pattern: /tân phú/i, value: "Tân Phú" },
@@ -688,6 +430,7 @@ async function findNearestLocation(address: string): Promise<IDiaDiem | null> {
 
         const commonProvinces = [
           { pattern: /hcm|tphcm|hồ chí minh/i, value: "TP.HCM" },
+          { pattern: /hà nội/i, value: "Hà Nội" },
           { pattern: /đồng nai/i, value: "Đồng Nai" },
           { pattern: /bình dương/i, value: "Bình Dương" },
         ];
@@ -728,7 +471,6 @@ async function findNearestLocation(address: string): Promise<IDiaDiem | null> {
       return null;
     }
 
-    // Filter potential matches with null checks
     let potentialLocations = allLocations.filter((loc) => {
       try {
         const locDistrict = normalizeText(loc?.district);

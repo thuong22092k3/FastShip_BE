@@ -268,6 +268,7 @@ export const statisticsController = {
       res.status(500).json({ message: "Lỗi hệ thống" });
     }
   },
+
   filterOrders: async (req: Request, res: Response): Promise<void> => {
     try {
       const { fromDate, toDate, TrangThai, DiaChiGiaoHang, NhanVienID } =
@@ -283,7 +284,10 @@ export const statisticsController = {
       }
 
       if (TrangThai) {
-        query.TrangThai = TrangThai;
+        query.TrangThai = {
+          $regex: `^${(TrangThai as string).trim()}$`,
+          $options: "i",
+        };
       }
 
       if (DiaChiGiaoHang) {
@@ -317,28 +321,24 @@ export const statisticsController = {
       sixMonthsAgo.setDate(1);
       sixMonthsAgo.setHours(0, 0, 0, 0);
 
-      // Debug: Log khoảng thời gian query
       console.log("Query range:", {
         start: sixMonthsAgo,
         end: endOfDay,
       });
 
-      // Lấy dữ liệu từ database
-      const orders = await DonHang.find({
-        CreatedAt: {
-          $gte: sixMonthsAgo,
-          $lte: endOfDay,
-        },
-      }).lean();
+      const allOrders = await DonHang.find({}).lean();
 
-      // Debug: Log số lượng đơn hàng tìm thấy
-      console.log(`Found ${orders.length} orders in date range`);
+      const filteredOrders = allOrders.filter((order) => {
+        const createdAt = new Date(order.CreatedAt);
+        return createdAt >= sixMonthsAgo && createdAt <= endOfDay;
+      });
 
-      // Tạo object để nhóm dữ liệu theo tháng
+      console.log(`Found ${filteredOrders.length} orders in date range`);
+
       const monthlyData: Record<string, { count: number; completed: number }> =
         {};
 
-      orders.forEach((order) => {
+      filteredOrders.forEach((order) => {
         const orderDate = new Date(order.CreatedAt);
         const monthKey = `${orderDate.getFullYear()}-${String(
           orderDate.getMonth() + 1
@@ -354,7 +354,6 @@ export const statisticsController = {
         }
       });
 
-      // Tạo mảng kết quả cho 6 tháng gần nhất
       const result = [];
       for (let i = 5; i >= 0; i--) {
         const date = new Date(today);
@@ -370,7 +369,6 @@ export const statisticsController = {
         });
       }
 
-      // Debug: Log kết quả cuối cùng
       console.log("Monthly stats result:", result);
 
       res.status(200).json({

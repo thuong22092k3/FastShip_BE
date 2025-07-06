@@ -21,6 +21,7 @@ export const vehicleController = {
         SucChua,
         TrangThai,
         BaoDuong,
+        DiaDiemId,
       } = req.body;
 
       if (
@@ -56,6 +57,7 @@ export const vehicleController = {
         SucChua,
         TrangThai,
         BaoDuong,
+        DiaDiemId,
       });
 
       await newVehicle.save();

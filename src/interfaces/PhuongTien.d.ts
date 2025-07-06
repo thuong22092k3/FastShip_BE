@@ -8,4 +8,5 @@ export interface IPhuongTien {
   TrangThai: string;
   BaoDuong: string;
   ThoiGianBaoDuong?: string;
+  DiaDiemId?: string;
 }
