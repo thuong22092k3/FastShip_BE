@@ -206,6 +206,7 @@ export const authController = {
   updateUser: async (req: Request, res: Response): Promise<void> => {
     try {
       const {
+        NhanVienID,
         UserName,
         Password,
         HoTen,
@@ -238,23 +239,30 @@ export const authController = {
 
       let updatedUser = null;
       for (const userType of userTypes) {
-        const foundUser = await userType.model.findOne({ UserName }).exec();
+        const foundUser = await userType.model.findOne({ NhanVienID }).exec();
         if (foundUser) {
           let updateData: Partial<IUser> = {
             HoTen,
             Email,
+            UserName,
+            Password,
             SDT,
             HieuSuat,
             CongViec,
+            DiaDiemId,
           };
 
-          if (Password) {
-            const salt = await bcrypt.genSalt(10);
-            updateData.Password = await bcrypt.hash(Password, salt);
-          }
+          // if (Password) {
+          //   const salt = await bcrypt.genSalt(10);
+          //   updateData.Password = await bcrypt.hash(Password, salt);
+          // }
 
           updatedUser = await userType.model
-            .findOneAndUpdate({ UserName }, { $set: updateData }, { new: true })
+            .findOneAndUpdate(
+              { NhanVienID },
+              { $set: updateData },
+              { new: true }
+            )
             .exec();
           break;
         }

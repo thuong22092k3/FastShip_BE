@@ -63,19 +63,16 @@ export const statisticsController = {
 
       const totalOrders = await DonHang.countDocuments();
 
-      const currentMonthOrders = await DonHang.countDocuments({
-        CreatedAt: {
-          $gte: startOfCurrentMonth,
-          $lte: endOfCurrentMonth,
-        },
-      });
+      const rawData = await DonHang.find({});
+      const currentMonthOrders = rawData.filter((d) => {
+        const created = new Date(d.CreatedAt);
+        return created >= startOfCurrentMonth && created <= endOfCurrentMonth;
+      }).length;
 
-      const lastMonthOrders = await DonHang.countDocuments({
-        CreatedAt: {
-          $gte: startOfLastMonth,
-          $lte: endOfLastMonth,
-        },
-      });
+      const lastMonthOrders = rawData.filter((d) => {
+        const created = new Date(d.CreatedAt);
+        return created >= startOfLastMonth && created <= endOfLastMonth;
+      }).length;
 
       const percentageChange =
         lastMonthOrders > 0
@@ -236,15 +233,33 @@ export const statisticsController = {
             },
           },
         },
+        { $sort: { completedOrders: -1 } },
+        { $limit: 10 },
         {
-          $sort: { completedOrders: -1 },
+          $lookup: {
+            from: "nhanviens",
+            localField: "_id",
+            foreignField: "NhanVienID",
+            as: "nhanvienInfo",
+          },
         },
         {
-          $limit: 10,
+          $lookup: {
+            from: "admins",
+            localField: "_id",
+            foreignField: "AdminID",
+            as: "adminInfo",
+          },
         },
         {
           $project: {
             staffId: "$_id",
+            staffName: {
+              $ifNull: [
+                { $arrayElemAt: ["$nhanvienInfo.HoTen", 0] },
+                { $arrayElemAt: ["$adminInfo.HoTen", 0] },
+              ],
+            },
             totalOrders: 1,
             completedOrders: 1,
             completionRate: {
